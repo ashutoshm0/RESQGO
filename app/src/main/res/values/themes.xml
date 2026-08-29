@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.RESQGO" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/resqgo_primary</item>
+        <item name="colorSecondary">@color/resqgo_secondary</item>
+        <item name="colorError">@color/resqgo_alert</item>
+        <item name="android:colorBackground">@color/resqgo_bg</item>
+        <item name="android:textColorPrimary">@color/resqgo_text_primary</item>
+        <item name="android:statusBarColor">@color/resqgo_bg</item>
+        <item name="android:navigationBarColor">@color/resqgo_bg</item>
+    </style>
+
+    <style name="Theme.RESQGO.Splash" parent="Theme.RESQGO">
+        <item name="android:windowBackground">@color/resqgo_bg</item>
+    </style>
+
+    <style name="Theme.RESQGO.Confirmation" parent="Theme.RESQGO">
+        <item name="android:windowBackground">@color/resqgo_alert</item>
+        <item name="android:statusBarColor">@color/resqgo_alert</item>
+        <item name="android:textColorPrimary">@color/white</item>
+    </style>
+    
+    <style name="Theme.RESQGO.Riding" parent="Theme.RESQGO">
+        <item name="android:windowBackground">@color/resqgo_bg</item>
+        <item name="android:statusBarColor">@color/resqgo_primary_dark</item>
+    </style>
+</resources>

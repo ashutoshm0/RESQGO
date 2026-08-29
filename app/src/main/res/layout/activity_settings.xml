@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/resqgo_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/resqgo_text_primary"
+            android:layout_marginTop="32dp"/>
+
+        <!-- Rider Profile -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp">
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:orientation="vertical">
+                
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/rider_name_label"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/resqgo_text_secondary"/>
+                    
+                <EditText
+                    android:id="@+id/etRiderName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:hint="@string/rider_name_hint"
+                    android:textColor="@color/resqgo_text_primary"
+                    android:background="@android:color/transparent"
+                    android:textSize="16sp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Emergency Contacts -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp">
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:orientation="vertical">
+                
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/emergency_contacts_title"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/resqgo_text_secondary"/>
+                    
+                <Button
+                    android:id="@+id/btnManageContacts"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/btn_manage_contacts"
+                    android:textSize="14sp"
+                    android:backgroundTint="@color/resqgo_primary"
+                    android:textColor="@color/white"
+                    app:cornerRadius="10dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Fast2SMS — Auto SMS without permission -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:orientation="vertical">
+
+                <!-- Header row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📱 AUTO SMS (Fast2SMS)"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/resqgo_text_secondary"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="No SMS permission needed — uses internet"
+                            android:textSize="11sp"
+                            android:textColor="@color/resqgo_secondary"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnFast2smsHelp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="How to setup?"
+                        android:textSize="11sp"
+                        android:backgroundTint="@color/resqgo_divider"
+                        android:textColor="@color/resqgo_text_secondary"
+                        android:paddingHorizontal="12dp"
+                        app:cornerRadius="18dp"/>
+                </LinearLayout>
+
+                <EditText
+                    android:id="@+id/etFast2smsKey"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="Paste Fast2SMS API key here..."
+                    android:textColor="@color/resqgo_text_primary"
+                    android:textSize="13sp"
+                    android:fontFamily="monospace"
+                    android:background="@android:color/transparent"
+                    android:inputType="textVisiblePassword"
+                    android:maxLines="2"/>
+
+                <!-- Test SMS button row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tvSmsTestResult"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Tap Test to verify key"
+                        android:textSize="12sp"
+                        android:textColor="@color/resqgo_text_secondary"/>
+
+                    <Button
+                        android:id="@+id/btnTestSms"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="Send Test SMS"
+                        android:textSize="11sp"
+                        android:backgroundTint="@color/resqgo_secondary"
+                        android:textColor="@color/white"
+                        android:paddingHorizontal="14dp"
+                        app:cornerRadius="18dp"/>
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+
+        <!-- Detection Sensitivity -->
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp">
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:orientation="vertical">
+                
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sensitivity_label"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/resqgo_text_secondary"/>
+                    
+                <RadioGroup
+                    android:id="@+id/rgSensitivity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp">
+                    
+                    <RadioButton
+                        android:id="@+id/rbLow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sensitivity_low"
+                        android:textColor="@color/resqgo_text_primary"/>
+                        
+                    <RadioButton
+                        android:id="@+id/rbMedium"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sensitivity_medium"
+                        android:textColor="@color/resqgo_text_primary"/>
+                        
+                    <RadioButton
+                        android:id="@+id/rbHigh"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sensitivity_high"
+                        android:textColor="@color/resqgo_text_primary"/>
+                </RadioGroup>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Permissions -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/permissions_status"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/resqgo_text_secondary"/>
+
+                <!-- Location row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/perm_location"
+                        android:textSize="14sp"
+                        android:textColor="@color/resqgo_text_primary"/>
+
+                    <TextView
+                        android:id="@+id/tvPermLocation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/perm_granted"
+                        android:textSize="13sp"
+                        android:textColor="@color/resqgo_success"/>
+                </LinearLayout>
+
+                <!-- Phone row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/perm_phone"
+                        android:textSize="14sp"
+                        android:textColor="@color/resqgo_text_primary"/>
+
+                    <TextView
+                        android:id="@+id/tvPermPhone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/perm_granted"
+                        android:textSize="13sp"
+                        android:textColor="@color/resqgo_success"/>
+                </LinearLayout>
+
+                <!-- SMS row — shows Grant button when permission not granted -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="SMS (SIM)"
+                            android:textSize="14sp"
+                            android:textColor="@color/resqgo_text_primary"/>
+
+                        <TextView
+                            android:id="@+id/tvSmsHint"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Optional — tap Grant to enable SIM SMS"
+                            android:textSize="11sp"
+                            android:textColor="@color/resqgo_text_secondary"/>
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvPermSms"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Not granted"
+                        android:textSize="13sp"
+                        android:textColor="@color/resqgo_warning"/>
+
+                    <Button
+                        android:id="@+id/btnGrantSms"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="8dp"
+                        android:text="Grant"
+                        android:textSize="11sp"
+                        android:backgroundTint="@color/resqgo_primary"
+                        android:textColor="#0F1923"
+                        android:paddingHorizontal="12dp"
+                        app:cornerRadius="16dp"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="32dp"
+            android:text="@string/save"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:backgroundTint="@color/resqgo_primary"
+            android:textColor="@color/white"
+            app:cornerRadius="12dp"/>
+
+    </LinearLayout>
+</ScrollView>
+

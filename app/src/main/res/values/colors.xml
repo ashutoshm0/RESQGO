@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="resqgo_primary">#0E7C7B</color>       <!-- Deep Teal -->
+    <color name="resqgo_primary_dark">#0A5C5B</color>  <!-- Darker teal -->
+    <color name="resqgo_secondary">#3B82F6</color>     <!-- Soft Blue -->
+    <color name="resqgo_alert">#E63946</color>         <!-- Signal Red -->
+    <color name="resqgo_alert_dark">#B02A35</color>    <!-- Dark Red -->
+    <color name="resqgo_warning">#F4A300</color>       <!-- Amber -->
+    <color name="resqgo_success">#2E9E5B</color>       <!-- Green -->
+    <color name="resqgo_bg">#121417</color>            <!-- Near-black -->
+    <color name="resqgo_surface">#1E2328</color>       <!-- Card surface -->
+    <color name="resqgo_surface2">#252B32</color>      <!-- Elevated surface -->
+    <color name="resqgo_divider">#2A3A4A</color>
+    <color name="resqgo_text_primary">#F1F1F1</color>
+    <color name="resqgo_text_secondary">#8899AA</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="transparent">#00000000</color>
+</resources>

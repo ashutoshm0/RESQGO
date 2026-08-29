@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/resqgo_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="28dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <!-- SOS Title -->
+        <TextView
+            android:id="@+id/tvSosTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🚨 SOS Alert Sent"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/resqgo_alert"
+            android:layout_marginTop="40dp"
+            android:gravity="center"/>
+
+        <!-- Info Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvContactsNotified"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Contacts notified"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/resqgo_text_primary"/>
+
+                <TextView
+                    android:id="@+id/tvLocationSent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Location: --"
+                    android:textSize="13sp"
+                    android:textColor="@color/resqgo_text_secondary"
+                    android:layout_marginTop="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvMapLink"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📍 Open in Google Maps"
+                    android:textSize="14sp"
+                    android:textColor="@color/resqgo_secondary"
+                    android:layout_marginTop="8dp"
+                    android:clickable="true"
+                    android:focusable="true"/>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Call Button -->
+        <Button
+            android:id="@+id/btnCallContact"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="20dp"
+            android:text="📞 Call Emergency Contact Now"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:backgroundTint="@color/resqgo_primary"
+            android:textColor="@color/white"
+            app:cornerRadius="12dp"/>
+
+        <!-- Nearest Hospital -->
+        <Button
+            android:id="@+id/btnNearestHospital"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="10dp"
+            android:text="🏥 Find Nearest Hospital"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:backgroundTint="@color/resqgo_secondary"
+            android:textColor="@color/white"
+            app:cornerRadius="12dp"/>
+
+        <!-- WhatsApp buttons (dynamically added) -->
+        <LinearLayout
+            android:id="@+id/whatsappButtonsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="4dp"/>
+
+        <!-- I'm Safe Button -->
+        <Button
+            android:id="@+id/btnImSafe"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="32dp"
+            android:text="✅ I'm Safe — Cancel Alert"
+            android:textSize="15sp"
+            android:backgroundTint="@color/resqgo_surface"
+            android:textColor="@color/resqgo_text_secondary"
+            app:cornerRadius="12dp"/>
+
+    </LinearLayout>
+</ScrollView>

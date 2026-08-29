@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RESQGO</string>
+    <string name="app_tagline">Ride Safe. Help Faster.</string>
+    
+    <!-- Onboarding -->
+    <string name="onboarding_contact_title">Who should we call?</string>
+    <string name="onboarding_contact_subtitle">Add your first emergency contact. You can add more later.</string>
+    <string name="contact_name_hint">Contact Name (e.g. Mom)</string>
+    <string name="contact_phone_hint">Phone Number</string>
+    <string name="contact_relation_hint">Relation (e.g. Family, Friend)</string>
+    <string name="btn_next">Next</string>
+    <string name="btn_allow">Allow Permissions</string>
+    <string name="permissions_title">We need your permission</string>
+    <string name="permissions_desc">RESQGO needs Location to find you in an emergency, Motion sensors to detect crashes, and Phone/SMS to automatically alert your contacts.</string>
+    
+    <!-- Home -->
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+    <string name="home_tagline">Stay safe out there.</string>
+    <string name="btn_start_ride">START RIDE</string>
+    <string name="btn_end_ride">End Ride</string>
+    <string name="btn_sos">SOS</string>
+    <string name="sos_confirm_title">Send SOS Alert?</string>
+    <string name="sos_confirm_message">This will immediately alert your emergency contacts and call the primary contact.</string>
+    <string name="yes_send_sos">Yes, Send SOS</string>
+    <string name="cancel">Cancel</string>
+    <string name="end_ride_confirm">End this ride?</string>
+    <string name="end_ride_message">Monitoring will stop. Are you sure?</string>
+    <string name="yes_end_ride">Yes, End Ride</string>
+    <string name="status_monitoring">🛡️ Monitoring Active</string>
+    <string name="status_ready">Ready to Ride</string>
+    <string name="ride_duration">Ride Time: %1$s</string>
+    <string name="monitoring_active_banner">Monitoring is active. Tap to return to ride.</string>
+    
+    <!-- Emergency Contacts -->
+    <string name="emergency_contacts_title">Emergency Contacts</string>
+    <string name="no_contacts">No contacts saved yet</string>
+    <string name="add_contact">Add Contact</string>
+    <string name="edit_contact">Edit</string>
+    <string name="delete_contact">Remove</string>
+    <string name="primary_contact">PRIMARY</string>
+    <string name="contact_limit">Maximum 3 contacts</string>
+    <string name="delete_confirm">Remove this contact?</string>
+    <string name="delete_confirm_message">%1$s will no longer receive SOS alerts.</string>
+    <string name="btn_manage_contacts">Manage Emergency Contacts</string>
+    
+    <!-- Notification -->
+    <string name="notif_channel_name">Ride Monitoring</string>
+    <string name="notif_title">RESQGO Active</string>
+    <string name="notif_text">Monitoring your ride for safety. Stay safe.</string>
+    
+    <!-- Riding Screen -->
+    <string name="monitoring_dot">●</string>
+    <string name="g_force_label">G-Force</string>
+    <string name="normal">Normal</string>
+    <string name="impact_warning">⚠ Impact Detected</string>
+    
+    <!-- Confirmation &amp; SOS -->
+    <string name="accident_detected">Possible Accident Detected!</string>
+    <string name="calling_help_in">Calling for help in</string>
+    <string name="im_ok">I\'M OK</string>
+    <string name="tts_alert">Possible accident detected. Tap I am OK, or we will call for help in %1$d seconds.</string>
+    
+    <!-- SOS Sent -->
+    <string name="sos_sent_title">🚨 SOS Alert Sent</string>
+    <string name="sos_manual_title">🚨 Manual SOS Sent</string>
+    <string name="contacts_notified">%1$d emergency contact(s) have been alerted</string>
+    <string name="location_sent">Location sent: %1$.4f, %2$.4f</string>
+    <string name="location_unavailable">Location could not be determined</string>
+    <string name="btn_call_contact">📞 Call Emergency Contact Now</string>
+    <string name="btn_im_safe">I\'m Safe — Cancel Alert</string>
+    <string name="false_alarm_sms">False alarm — I am safe. Please ignore the previous RESQGO alert. Thank you.</string>
+    
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="rider_name_label">Your Name</string>
+    <string name="rider_name_hint">Your name (shown in alerts)</string>
+    <string name="sensitivity_label">Detection Sensitivity</string>
+    <string name="sensitivity_low">Low (Major crashes only)</string>
+    <string name="sensitivity_medium">Medium (Recommended)</string>
+    <string name="sensitivity_high">High (Catches minor falls)</string>
+    <string name="permissions_status">Permission Status</string>
+    <string name="perm_location">Location</string>
+    <string name="perm_phone">Phone Call</string>
+    <string name="perm_sms">SMS</string>
+    <string name="perm_granted">✓ Granted</string>
+    <string name="perm_denied">✗ Denied — tap to fix</string>
+    <string name="save">Save Settings</string>
+    
+    <!-- Misc -->
+    <string name="sensor_unavailable">Sensor unavailable on this device</string>
+    <string name="background_location_title">Background Location Needed</string>
+    <string name="background_location_message">RESQGO needs \"Allow all the time\" location access to detect crashes while your screen is off.</string>
+</resources>

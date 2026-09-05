@@ -102,14 +102,23 @@ class ConfirmationActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
     }
 
+    private var initialSeconds = 15
+
     private fun startCountdown() {
+        val prefs = com.example.resqgo.data.local.UserPreferences(this)
+        secondsLeft = prefs.sosTimerSeconds
+        initialSeconds = secondsLeft
+        
         binding.tvCountdownText.text = secondsLeft.toString()
         countDownTimer = object : CountDownTimer((secondsLeft * 1000).toLong(), 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 secondsLeft = (millisUntilFinished / 1000).toInt()
                 binding.tvCountdownText.text = secondsLeft.toString()
-                binding.countdownRing.progress = millisUntilFinished / (15 * 1000f)
                 
+                // Keep the circular progress synced with the dynamic duration
+                binding.countdownRing.progress = millisUntilFinished / (initialSeconds * 1000f)
+                
+                // Only speak the alert when 10 seconds are remaining
                 if (secondsLeft == 10) {
                     speakAlert()
                 }
@@ -131,7 +140,6 @@ class ConfirmationActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         stopAlerts()
         RideMonitoringService.resetConfirmationFlag()
         sosManager.triggerSOS(manuallyTriggered = false)
-        finish()
     }
 
     private fun stopAlerts() {

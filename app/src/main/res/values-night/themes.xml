@@ -1,4 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Single dark theme used for all modes -->
+    <!-- Base application theme. -->
+    <style name="Theme.RESQGO" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your dark theme here. -->
+        <item name="colorPrimary">@color/md_theme_dark_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_dark_primary</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_dark_onPrimary</item>
+        
+        <item name="colorError">@color/md_theme_dark_error</item>
+        <item name="colorOnError">@color/md_theme_dark_onError</item>
+        
+        <item name="android:colorBackground">@color/md_theme_dark_background</item>
+        <item name="colorOnBackground">@color/md_theme_dark_onBackground</item>
+        
+        <item name="colorSurface">@color/md_theme_dark_surface</item>
+        <item name="colorOnSurface">@color/md_theme_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/md_theme_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_dark_onSurfaceVariant</item>
+        <item name="colorOutline">@color/md_theme_dark_outline</item>
+
+        <!-- System UI -->
+        <item name="android:statusBarColor">@color/md_theme_dark_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/md_theme_dark_background</item>
+
+        <!-- Basic Text Color Mapping for Legacy Views -->
+        <item name="android:textColorPrimary">@color/md_theme_dark_onBackground</item>
+        <item name="android:textColorSecondary">@color/md_theme_dark_onSurfaceVariant</item>
+    </style>
+
+    <style name="Theme.RESQGO.Splash" parent="Theme.RESQGO">
+        <item name="android:windowBackground">@color/md_theme_dark_background</item>
+    </style>
+
+    <style name="Theme.RESQGO.Confirmation" parent="Theme.RESQGO">
+        <item name="android:windowBackground">#0D0F12</item>
+        <item name="android:statusBarColor">#0D0F12</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:textColorPrimary">@color/white</item>
+    </style>
+    
+    <style name="Theme.RESQGO.Riding" parent="Theme.RESQGO">
+        <item name="android:windowBackground">@color/md_theme_dark_background</item>
+        <item name="android:statusBarColor">@color/md_theme_dark_background</item>
+    </style>
 </resources>

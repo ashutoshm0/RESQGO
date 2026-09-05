@@ -177,7 +177,9 @@ class RideMonitoringService : Service(), SensorEventListener {
                     ax = accel.x, ay = accel.y, az = accel.z,
                     gx = lastGyroX,  gy = lastGyroY,  gz = lastGyroZ
                 )
-                val result = detector.analyze(accel, null, null)
+                val gyro = com.example.resqgo.sensors.GyroscopeData(lastGyroX, lastGyroY, lastGyroZ, timestamp)
+                val speedMps = locationTracker.getLastLocation()?.speed
+                val result = detector.analyze(accel, gyro, speedMps)
                 if (result is DetectionResult.PossibleAccident) {
                     Log.d("RideService", "Crash detected: ${result.reason}")
                     triggerCrashAlert()
@@ -231,9 +233,10 @@ class RideMonitoringService : Service(), SensorEventListener {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val timerDuration = prefs.sosTimerSeconds
         val notification = NotificationCompat.Builder(this, CRASH_CHANNEL_ID)
             .setContentTitle("🚨 Possible Accident Detected!")
-            .setContentText("Tap I'M OK to cancel. Auto-calling emergency contacts in 15 seconds.")
+            .setContentText("Tap I'M OK to cancel. Auto-calling emergency contacts in $timerDuration seconds.")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -274,16 +277,18 @@ class RideMonitoringService : Service(), SensorEventListener {
 
     // ────────────────────────────────────────────────────────
     private fun buildRideNotification(): Notification {
-        val homeIntent = PendingIntent.getActivity(
+        val rideIntent = PendingIntent.getActivity(
             this, 0,
-            Intent(this, HomeActivity::class.java),
-            PendingIntent.FLAG_IMMUTABLE
+            Intent(this, com.example.resqgo.ui.riding.RidingActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         return NotificationCompat.Builder(this, RIDE_CHANNEL_ID)
-            .setContentTitle(getString(R.string.notif_title))
-            .setContentText(getString(R.string.notif_text))
+            .setContentTitle("🛡️ RESQGO Safety Active")
+            .setContentText("Monitoring two-wheeler in background while you ride")
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentIntent(homeIntent)
+            .setContentIntent(rideIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()

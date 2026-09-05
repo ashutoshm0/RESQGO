@@ -1,0 +1,83 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="400dp"
+    android:height="150dp"
+    android:viewportWidth="400"
+    android:viewportHeight="150">
+
+    <!-- Subtle background tint -->
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:fillAlpha="0.05"
+        android:pathData="M 0,0 L 400,0 L 400,150 L 0,150 Z" />
+
+    <!-- Madhubani Sun / Chakra motif (top right) -->
+    <!-- Inner Core -->
+    <path
+        android:fillColor="?attr/colorError"
+        android:fillAlpha="0.15"
+        android:pathData="M 350,50 m -30,0 a 30,30 0 1,1 60,0 a 30,30 0 1,1 -60,0" />
+
+    <!-- Outer Ring -->
+    <path
+        android:strokeColor="?attr/colorPrimary"
+        android:strokeWidth="3"
+        android:strokeAlpha="0.3"
+        android:pathData="M 350,50 m -40,0 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0" />
+
+    <!-- Sun Rays (Geometric Triangles) -->
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:fillAlpha="0.2"
+        android:pathData="
+            M 350,0 L 355,10 L 345,10 Z
+            M 350,100 L 355,90 L 345,90 Z
+            M 300,50 L 310,45 L 310,55 Z
+            M 400,50 L 390,45 L 390,55 Z
+            M 315,15 L 325,20 L 320,25 Z
+            M 385,85 L 375,80 L 380,75 Z
+            M 385,15 L 380,25 L 375,20 Z
+            M 315,85 L 320,75 L 325,80 Z
+        " />
+
+    <!-- Intricate Bottom Border (Madhubani aesthetic) -->
+    <!-- Main line -->
+    <path
+        android:strokeColor="?attr/colorPrimary"
+        android:strokeWidth="2"
+        android:strokeAlpha="0.4"
+        android:pathData="M 0,140 L 400,140" />
+    
+    <!-- Secondary line -->
+    <path
+        android:strokeColor="?attr/colorError"
+        android:strokeWidth="1"
+        android:strokeAlpha="0.3"
+        android:pathData="M 0,145 L 400,145" />
+
+    <!-- Repeating triangles along border -->
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:fillAlpha="0.2"
+        android:pathData="
+            M 10,140 L 15,135 L 20,140 Z
+            M 30,140 L 35,135 L 40,140 Z
+            M 50,140 L 55,135 L 60,140 Z
+            M 70,140 L 75,135 L 80,140 Z
+            M 90,140 L 95,135 L 100,140 Z
+            M 110,140 L 115,135 L 120,140 Z
+            M 130,140 L 135,135 L 140,140 Z
+            M 150,140 L 155,135 L 160,140 Z
+            M 170,140 L 175,135 L 180,140 Z
+            M 190,140 L 195,135 L 200,140 Z
+            M 210,140 L 215,135 L 220,140 Z
+            M 230,140 L 235,135 L 240,140 Z
+            M 250,140 L 255,135 L 260,140 Z
+            M 270,140 L 275,135 L 280,140 Z
+            M 290,140 L 295,135 L 300,140 Z
+            M 310,140 L 315,135 L 320,140 Z
+            M 330,140 L 335,135 L 340,140 Z
+            M 350,140 L 355,135 L 360,140 Z
+            M 370,140 L 375,135 L 380,140 Z
+            M 390,140 L 395,135 L 400,140 Z
+        " />
+</vector>

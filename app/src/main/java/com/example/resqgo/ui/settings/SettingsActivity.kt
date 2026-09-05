@@ -53,6 +53,12 @@ class SettingsActivity : AppCompatActivity() {
             else   -> binding.rgSensitivity.check(R.id.rbMedium)
         }
 
+        val timerValues = resources.getIntArray(R.array.sos_timer_values)
+        val currentIndex = timerValues.indexOf(prefs.sosTimerSeconds)
+        if (currentIndex >= 0) {
+            binding.spinnerSosTimer.setSelection(currentIndex)
+        }
+
         updatePermissionsStatus()
     }
 
@@ -162,6 +168,12 @@ class SettingsActivity : AppCompatActivity() {
         // ── Save ──────────────────────────────────────────────────────────────
         binding.btnSave.setOnClickListener {
             prefs.riderName = binding.etRiderName.text.toString().trim()
+
+            val timerValues = resources.getIntArray(R.array.sos_timer_values)
+            val selectedIndex = binding.spinnerSosTimer.selectedItemPosition
+            if (selectedIndex in timerValues.indices) {
+                prefs.sosTimerSeconds = timerValues[selectedIndex]
+            }
 
             // Save Fast2SMS key
             val apiKey = binding.etFast2smsKey.text.toString().trim()

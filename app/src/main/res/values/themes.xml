@@ -1,27 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.RESQGO" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="colorPrimary">@color/resqgo_primary</item>
-        <item name="colorSecondary">@color/resqgo_secondary</item>
-        <item name="colorError">@color/resqgo_alert</item>
-        <item name="android:colorBackground">@color/resqgo_bg</item>
-        <item name="android:textColorPrimary">@color/resqgo_text_primary</item>
-        <item name="android:statusBarColor">@color/resqgo_bg</item>
-        <item name="android:navigationBarColor">@color/resqgo_bg</item>
+    <!-- Base application theme (DayNight allows automatic light/dark switching). -->
+    <style name="Theme.RESQGO" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">@color/md_theme_light_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_light_primary</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_light_onPrimary</item>
+        
+        <item name="colorError">@color/md_theme_light_error</item>
+        <item name="colorOnError">@color/md_theme_light_onError</item>
+        
+        <item name="android:colorBackground">@color/md_theme_light_background</item>
+        <item name="colorOnBackground">@color/md_theme_light_onBackground</item>
+        
+        <item name="colorSurface">@color/md_theme_light_surface</item>
+        <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
+        <item name="colorSurfaceVariant">@color/md_theme_light_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_light_onSurfaceVariant</item>
+        <item name="colorOutline">@color/md_theme_light_outline</item>
+
+        <!-- System UI -->
+        <item name="android:statusBarColor">@color/md_theme_light_background</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/md_theme_light_background</item>
+        <!-- For navigation bar light/dark icon contrast, API 27+ needed, but we handle via theme -->
+
+        <!-- Basic Text Color Mapping for Legacy Views -->
+        <item name="android:textColorPrimary">@color/md_theme_light_onBackground</item>
+        <item name="android:textColorSecondary">@color/md_theme_light_onSurfaceVariant</item>
     </style>
 
     <style name="Theme.RESQGO.Splash" parent="Theme.RESQGO">
-        <item name="android:windowBackground">@color/resqgo_bg</item>
+        <item name="android:windowBackground">@color/md_theme_light_background</item>
     </style>
 
     <style name="Theme.RESQGO.Confirmation" parent="Theme.RESQGO">
-        <item name="android:windowBackground">@color/resqgo_alert</item>
-        <item name="android:statusBarColor">@color/resqgo_alert</item>
+        <!-- Dark obsidian for the confirmation screen regardless of light/dark mode for seriousness -->
+        <item name="android:windowBackground">#0D0F12</item>
+        <item name="android:statusBarColor">#0D0F12</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:textColorPrimary">@color/white</item>
     </style>
     
     <style name="Theme.RESQGO.Riding" parent="Theme.RESQGO">
-        <item name="android:windowBackground">@color/resqgo_bg</item>
-        <item name="android:statusBarColor">@color/resqgo_primary_dark</item>
+        <item name="android:windowBackground">@color/md_theme_light_background</item>
+        <item name="android:statusBarColor">@color/md_theme_light_background</item>
     </style>
 </resources>

@@ -42,7 +42,7 @@ class SOSManager(private val context: Context) {
     fun triggerSOS(manuallyTriggered: Boolean = false) {
         CoroutineScope(Dispatchers.IO).launch {
 
-            // ── Step 1: Get location ───────────────────────────────────────────
+            // ✨ Step 1: Get location ✨
             val location  = tracker.getCurrentLocation() ?: tracker.getLastLocation()
             val latitude  = location?.latitude  ?: 0.0
             val longitude = location?.longitude ?: 0.0
@@ -54,10 +54,7 @@ class SOSManager(private val context: Context) {
             val contacts  = prefs.getEmergencyContacts()
             val riderName = prefs.riderName ?: "Rider"
 
-            // Build two message versions
-            val fullMessage  = buildFullMessage(riderName, latitude, longitude, address)
             val plainMessage = buildPlainMessage(riderName, latitude, longitude, address)
-
             Log.d(TAG, "SOS triggered | contacts=${contacts.size} | location=$address")
 
             if (contacts.isEmpty()) {
@@ -68,24 +65,31 @@ class SOSManager(private val context: Context) {
                 return@launch
             }
 
-            // ── Step 2: Send messages via 3-layer fallback ────────────────────
+            // ✨ Step 2: Show SOS Sent screen IMMEDIATELY so app stays in foreground ✨
+            // This prevents Android 10+ background activity launch restrictions.
+            withContext(Dispatchers.Main) {
+                showSOSSentScreen(
+                    latitude          = latitude,
+                    longitude         = longitude,
+                    address           = address,
+                    contactsNotified  = contacts.size,
+                    manuallyTriggered = manuallyTriggered,
+                    smsFailed         = false, // We assume success initially, update UI later if needed
+                    contacts          = contacts,
+                    sosMessage        = plainMessage
+                )
+            }
+
+            // ✨ Step 3: Send messages via 3-layer fallback in background ✨
             val phones = contacts.map { it.phone }
 
             val layer1ok = trySendViaSIM(phones, plainMessage)            // Layer 1: own SIM
             val layer2ok = if (!layer1ok) trySendViaInternet(phones, plainMessage) else true  // Layer 2: internet
-            // Layer 3: Intent fallback handled on SOSSentActivity if both fail
-
             val smsSent = layer1ok || layer2ok
+            
             Log.d(TAG, "SMS result: SIM=$layer1ok | Internet=$layer2ok | anyOk=$smsSent")
 
-            // ── Step 3: Wait 3 seconds so messages are fully queued ────────────
-            delay(3_000L)
-
-            // ── Step 4: Call all contacts sequentially ────────────────────────
-            withContext(Dispatchers.Main) {
-                callAllContactsSequentially(contacts, 0)
-            }
-
+            // ✨ Step 4: Log event ✨
             try {
                 repository.logEvent(
                     latitude = latitude,
@@ -98,19 +102,13 @@ class SOSManager(private val context: Context) {
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to log SOS event", e)
             }
-
-            // ── Step 5: Show SOS Sent screen ───────────────────────────────────
-            withContext(Dispatchers.Main) {
-                showSOSSentScreen(
-                    latitude          = latitude,
-                    longitude         = longitude,
-                    address           = address,
-                    contactsNotified  = if (smsSent) contacts.size else 0,
-                    manuallyTriggered = manuallyTriggered,
-                    smsFailed         = !smsSent,
-                    contacts          = contacts,
-                    sosMessage        = plainMessage
-                )
+            
+            // ✨ Step 5: Automatically call the PRIMARY contact only ✨
+            // Calling sequentially causes telecom crashes on Xiaomi/Samsung.
+            if (contacts.isNotEmpty()) {
+                withContext(Dispatchers.Main) {
+                    makeCall(contacts[0].phone)
+                }
             }
         }
     }
@@ -181,7 +179,8 @@ class SOSManager(private val context: Context) {
 
     // ── Phone call ────────────────────────────────────────────────────────────
     private fun makeCall(phoneNumber: String): Boolean {
-        val uri    = Uri.parse("tel:$phoneNumber")
+        val sanitized = phoneNumber.replace(Regex("[^0-9+]"), "")
+        val uri    = Uri.parse("tel:$sanitized")
         val intent = if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE)
                 == PackageManager.PERMISSION_GRANTED) {
             Intent(Intent.ACTION_CALL, uri)   // auto-dial

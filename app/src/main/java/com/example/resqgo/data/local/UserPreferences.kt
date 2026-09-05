@@ -19,6 +19,7 @@ class UserPreferences(context: Context) {
         private const val KEY_SENSITIVITY               = "sensitivity"
         private const val KEY_EMERGENCY_CONTACTS        = "emergency_contacts"
         private const val KEY_FAST2SMS_API_KEY          = "fast2sms_api_key"
+        private const val KEY_SOS_TIMER_SECONDS         = "sos_timer_seconds"
     }
 
     var hasCompletedOnboarding: Boolean
@@ -46,6 +47,10 @@ class UserPreferences(context: Context) {
             return if (stored.isBlank()) bundledFast2smsKey else stored
         }
         set(value) = prefs.edit().putString(KEY_FAST2SMS_API_KEY, value).apply()
+        
+    var sosTimerSeconds: Int
+        get() = prefs.getInt(KEY_SOS_TIMER_SECONDS, 20) // Default 20 seconds
+        set(value) = prefs.edit().putInt(KEY_SOS_TIMER_SECONDS, value).apply()
 
     fun getEmergencyContacts(): List<EmergencyContact> {
         val contactsJson = prefs.getString(KEY_EMERGENCY_CONTACTS, "[]")

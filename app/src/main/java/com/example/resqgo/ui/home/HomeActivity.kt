@@ -80,6 +80,7 @@ class HomeActivity : AppCompatActivity() {
             binding.cardActiveBanner.visibility = View.GONE
             binding.btnStartRide.text = getString(R.string.btn_start_ride)
         }
+        binding.tvCrashTimerInfo.text = "⏱ Auto-SOS Timer: ${prefs.sosTimerSeconds}s (Change in Settings)"
     }
 
     private fun setupListeners() {

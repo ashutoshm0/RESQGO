@@ -58,8 +58,10 @@ dependencies {
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
     
-    // Play Services Location
+    // Play Services Location & Maps
     implementation(libs.play.services.location)
+    implementation(libs.play.services.maps)
+    implementation(libs.okhttp)
     
     // WorkManager
     implementation(libs.workmanager.ktx)

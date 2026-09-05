@@ -102,7 +102,8 @@ class SOSSentActivity : AppCompatActivity() {
         binding.btnCallContact.setOnClickListener {
             val primary = prefs.getPrimaryContact()
             if (primary != null) {
-                startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${primary.phone}")))
+                val sanitized = primary.phone.replace(Regex("[^0-9+]"), "")
+                startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$sanitized")))
             }
         }
 

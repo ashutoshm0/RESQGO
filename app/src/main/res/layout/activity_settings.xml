@@ -249,6 +249,49 @@
                 </RadioGroup>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+        
+        <!-- Crash Confirmation Timer -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp">
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:orientation="vertical">
+                
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Crash Confirmation Timer"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/resqgo_text_secondary"/>
+                    
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="How long should RESQGO wait for your response before automatically calling for help?"
+                    android:textSize="11sp"
+                    android:textColor="@color/resqgo_text_primary"
+                    android:alpha="0.8"/>
+                    
+                <Spinner
+                    android:id="@+id/spinnerSosTimer"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:backgroundTint="@color/resqgo_text_primary"
+                    android:entries="@array/sos_timer_options"/>
+                    
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
         <!-- Permissions -->
         <androidx.cardview.widget.CardView

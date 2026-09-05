@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Outer halo ring for visibility -->
+    <path
+        android:fillColor="#332D3142"
+        android:pathData="M24,24m-22,0a22,22 0,1 1,44 0a22,22 0,1 1,-44 0" />
+    <!-- Solid core disc -->
+    <path
+        android:fillColor="#F4B41A"
+        android:pathData="M24,24m-16,0a16,16 0,1 1,32 0a16,16 0,1 1,-32 0" />
+    <path
+        android:fillColor="#2D3142"
+        android:pathData="M24,24m-14,0a14,14 0,1 1,28 0a14,14 0,1 1,-28 0" />
+    <!-- Direction arrow / Motorcycle symbol -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,13L32,29L24,25L16,29Z" />
+    <path
+        android:fillColor="#F4B41A"
+        android:pathData="M24,21m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0" />
+</vector>

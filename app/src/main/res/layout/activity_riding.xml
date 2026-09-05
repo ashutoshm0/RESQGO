@@ -1,545 +1,450 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/resqgo_bg"
-    android:fillViewport="true">
+    android:background="@color/resqgo_bg">
 
+    <!-- 1. The Full-Screen Google Map -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/mapFragment"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- 2. Top Bar: Floating Card for Safety Status, Speedometer, Destination, and Route Selection -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="100dp">
+        android:padding="16dp"
+        android:clipToPadding="false">
 
-        <!-- Top bar -->
-        <LinearLayout
+        <!-- Top Header Card -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:layout_marginTop="24dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tvMonitoringDot"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="●"
-                android:textSize="24sp"
-                android:textColor="@color/resqgo_success"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text=" MONITORING ACTIVE"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/resqgo_text_secondary"
-                android:letterSpacing="0.15"/>
-
-            <Button
-                android:id="@+id/btnEndRide"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="End Ride"
-                android:backgroundTint="@color/resqgo_surface"
-                android:textColor="@color/resqgo_text_secondary"
-                android:textSize="13sp"
-                android:paddingHorizontal="16dp"
-                app:cornerRadius="20dp"/>
-        </LinearLayout>
-
-        <!-- GPS Status Strip -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="20dp"
-            android:paddingVertical="6dp"
-            android:background="@color/resqgo_surface"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tvGpsStatus"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="📡 GPS: Acquiring..."
-                android:textSize="12sp"
-                android:textColor="@color/resqgo_warning"
-                android:fontFamily="monospace"/>
-
-            <TextView
-                android:id="@+id/tvSpeedKmh"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="-- km/h"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="@color/resqgo_text_secondary"
-                android:fontFamily="monospace"/>
-        </LinearLayout>
-
-        <!-- Timer Card -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="8dp"
             app:cardBackgroundColor="@color/resqgo_surface"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="0dp">
+            app:cardCornerRadius="18dp"
+            app:cardElevation="6dp"
+            app:strokeColor="@color/resqgo_divider"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="20dp"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="14dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="RIDE DURATION"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/resqgo_text_secondary"
-                    android:letterSpacing="0.2"/>
-
-                <TextView
-                    android:id="@+id/tvRideDuration"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="00:00:00"
-                    android:textSize="44sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/resqgo_primary"
-                    android:fontFamily="monospace"
-                    android:layout_marginTop="4dp"/>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- G-Force Card -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@color/resqgo_surface"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="0dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="vertical">
-
-                <!-- Header row -->
+                <!-- Row 1: Safety Status + Crash Timer + Speedometer -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <TextView
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_shield"
+                        app:tint="@color/resqgo_success" />
+
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="⚡ G-FORCE (TOTAL)"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/resqgo_text_secondary"
-                        android:letterSpacing="0.1"/>
+                        android:layout_marginStart="8dp"
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/tvGForceValue"
+                        <TextView
+                            android:id="@+id/tvMonitoringStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/status_monitoring"
+                            android:textColor="@color/resqgo_success"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvSosTimerDisplay"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="SOS Countdown: 30s"
+                            android:textColor="@color/resqgo_text_secondary"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <!-- Speedometer Badge -->
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="-- m/s²"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/resqgo_primary"/>
+                        android:gravity="end"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvSpeed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 km/h"
+                            android:textColor="@color/resqgo_text_primary"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="CURRENT SPEED"
+                            android:textColor="@color/resqgo_text_secondary"
+                            android:textSize="9sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.05" />
+                    </LinearLayout>
                 </LinearLayout>
 
-                <ProgressBar
-                    android:id="@+id/progressGForce"
-                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="12dp"
-                    android:layout_marginTop="10dp"
-                    android:max="100"
-                    android:progress="0"
-                    android:progressTint="@color/resqgo_success"
-                    android:progressBackgroundTint="@color/resqgo_divider"/>
-
-                <!-- Threshold markers -->
+                <!-- Row 2: Destination Search / Shared Location Input -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:orientation="horizontal">
+                    android:layout_height="46dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_search_box"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="12dp">
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="0 G"
-                        android:textSize="10sp"
-                        android:textColor="@color/resqgo_text_secondary"/>
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_search"
+                        app:tint="@color/resqgo_text_secondary" />
 
-                    <TextView
+                    <EditText
+                        android:id="@+id/etDestination"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="2G Safe"
-                        android:textSize="10sp"
-                        android:textColor="@color/resqgo_success"
-                        android:gravity="center"/>
+                        android:layout_marginStart="8dp"
+                        android:background="@android:color/transparent"
+                        android:hint="Enter destination or paste location link"
+                        android:textColor="@color/resqgo_text_primary"
+                        android:textColorHint="@color/resqgo_text_secondary"
+                        android:textSize="13sp"
+                        android:imeOptions="actionSearch"
+                        android:singleLine="true" />
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="⚠ Alert"
-                        android:textSize="10sp"
-                        android:textColor="@color/resqgo_warning"
-                        android:gravity="center"/>
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="🚨 Crash"
-                        android:textSize="10sp"
-                        android:textColor="@color/resqgo_alert"
-                        android:gravity="end"/>
+                    <ImageButton
+                        android:id="@+id/btnSearchDestination"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_navigation"
+                        app:tint="?attr/colorPrimary" />
                 </LinearLayout>
 
-                <!-- Status label -->
-                <TextView
-                    android:id="@+id/tvImpactStatus"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Normal"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/resqgo_success"
-                    android:gravity="center"
-                    android:layout_marginTop="8dp"/>
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Accelerometer Card -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@color/resqgo_surface"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="0dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="📱 ACCELEROMETER (m/s²)"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/resqgo_text_secondary"
-                    android:letterSpacing="0.1"/>
-
-                <!-- X axis -->
+                <!-- Row 3: Destination Info & Route Choices (visible when destination is set) -->
                 <LinearLayout
+                    android:id="@+id/layoutRouteOptions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
-                    <TextView
-                        android:layout_width="24dp"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="X"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/resqgo_alert"/>
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                    <ProgressBar
-                        android:id="@+id/progressAccelX"
-                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                        android:layout_width="0dp"
-                        android:layout_height="8dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="8dp"
-                        android:max="200"
-                        android:progress="100"
-                        android:progressTint="@color/resqgo_alert"
-                        android:progressBackgroundTint="@color/resqgo_divider"/>
+                        <TextView
+                            android:id="@+id/tvRouteDistanceTime"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="📍 6.4 km • ~15 mins"
+                            android:textColor="?attr/colorPrimary"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
 
-                    <TextView
-                        android:id="@+id/tvAccelX"
-                        android:layout_width="64dp"
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnStartNavigation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="Start Nav"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="18dp"
+                            android:paddingHorizontal="14dp"
+                            app:backgroundTint="?attr/colorPrimary"
+                            android:textColor="@color/white" />
+                    </LinearLayout>
+
+                    <!-- Horizontal Scroll for Route Options (Shortest, Toll-free, Low-traffic, Preferred) -->
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="0.00"
-                        android:textSize="12sp"
-                        android:textColor="@color/resqgo_text_primary"
-                        android:fontFamily="monospace"
-                        android:gravity="end"/>
-                </LinearLayout>
+                        android:layout_marginTop="6dp"
+                        android:scrollbars="none">
 
-                <!-- Y axis -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/chipGroupRoutes"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:singleSelection="true">
 
-                    <TextView
-                        android:layout_width="24dp"
-                        android:layout_height="wrap_content"
-                        android:text="Y"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/resqgo_success"/>
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipPreferred"
+                                style="@style/Widget.Material3.Chip.Filter"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checked="true"
+                                android:text="🟢 Preferred" />
 
-                    <ProgressBar
-                        android:id="@+id/progressAccelY"
-                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                        android:layout_width="0dp"
-                        android:layout_height="8dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="8dp"
-                        android:max="200"
-                        android:progress="100"
-                        android:progressTint="@color/resqgo_success"
-                        android:progressBackgroundTint="@color/resqgo_divider"/>
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipShortest"
+                                style="@style/Widget.Material3.Chip.Filter"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="⚡ Shortest" />
 
-                    <TextView
-                        android:id="@+id/tvAccelY"
-                        android:layout_width="64dp"
-                        android:layout_height="wrap_content"
-                        android:text="0.00"
-                        android:textSize="12sp"
-                        android:textColor="@color/resqgo_text_primary"
-                        android:fontFamily="monospace"
-                        android:gravity="end"/>
-                </LinearLayout>
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipTollFree"
+                                style="@style/Widget.Material3.Chip.Filter"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🚫 Toll-Free" />
 
-                <!-- Z axis -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="24dp"
-                        android:layout_height="wrap_content"
-                        android:text="Z"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/resqgo_secondary"/>
-
-                    <ProgressBar
-                        android:id="@+id/progressAccelZ"
-                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                        android:layout_width="0dp"
-                        android:layout_height="8dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="8dp"
-                        android:max="200"
-                        android:progress="100"
-                        android:progressTint="@color/resqgo_secondary"
-                        android:progressBackgroundTint="@color/resqgo_divider"/>
-
-                    <TextView
-                        android:id="@+id/tvAccelZ"
-                        android:layout_width="64dp"
-                        android:layout_height="wrap_content"
-                        android:text="9.80"
-                        android:textSize="12sp"
-                        android:textColor="@color/resqgo_text_primary"
-                        android:fontFamily="monospace"
-                        android:gravity="end"/>
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipLowTraffic"
+                                style="@style/Widget.Material3.Chip.Filter"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🚗 Low-Traffic" />
+                        </com.google.android.material.chip.ChipGroup>
+                    </HorizontalScrollView>
                 </LinearLayout>
 
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
 
-        <!-- Gyroscope Card -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@color/resqgo_surface"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="0dp">
+    <!-- Floating Re-Center Button -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabRecenter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="175dp"
+        android:contentDescription="Re-center on bike"
+        android:src="@drawable/ic_my_location"
+        app:backgroundTint="@color/resqgo_surface"
+        app:tint="?attr/colorPrimary"
+        app:fabSize="mini"
+        app:elevation="6dp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="vertical">
+    <!-- Bottom Controls & SOS -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="56dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🔄 GYROSCOPE (rad/s)"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/resqgo_text_secondary"
-                    android:letterSpacing="0.1"/>
-
-                <!-- Pitch (X) -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="48dp"
-                        android:layout_height="wrap_content"
-                        android:text="Pitch"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/resqgo_alert"/>
-
-                    <ProgressBar
-                        android:id="@+id/progressGyroX"
-                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                        android:layout_width="0dp"
-                        android:layout_height="8dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="8dp"
-                        android:max="200"
-                        android:progress="100"
-                        android:progressTint="@color/resqgo_alert"
-                        android:progressBackgroundTint="@color/resqgo_divider"/>
-
-                    <TextView
-                        android:id="@+id/tvGyroX"
-                        android:layout_width="64dp"
-                        android:layout_height="wrap_content"
-                        android:text="0.00"
-                        android:textSize="12sp"
-                        android:textColor="@color/resqgo_text_primary"
-                        android:fontFamily="monospace"
-                        android:gravity="end"/>
-                </LinearLayout>
-
-                <!-- Roll (Y) -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="48dp"
-                        android:layout_height="wrap_content"
-                        android:text="Roll"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/resqgo_success"/>
-
-                    <ProgressBar
-                        android:id="@+id/progressGyroY"
-                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                        android:layout_width="0dp"
-                        android:layout_height="8dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="8dp"
-                        android:max="200"
-                        android:progress="100"
-                        android:progressTint="@color/resqgo_success"
-                        android:progressBackgroundTint="@color/resqgo_divider"/>
-
-                    <TextView
-                        android:id="@+id/tvGyroY"
-                        android:layout_width="64dp"
-                        android:layout_height="wrap_content"
-                        android:text="0.00"
-                        android:textSize="12sp"
-                        android:textColor="@color/resqgo_text_primary"
-                        android:fontFamily="monospace"
-                        android:gravity="end"/>
-                </LinearLayout>
-
-                <!-- Yaw (Z) -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="48dp"
-                        android:layout_height="wrap_content"
-                        android:text="Yaw"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/resqgo_secondary"/>
-
-                    <ProgressBar
-                        android:id="@+id/progressGyroZ"
-                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                        android:layout_width="0dp"
-                        android:layout_height="8dp"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="8dp"
-                        android:max="200"
-                        android:progress="100"
-                        android:progressTint="@color/resqgo_secondary"
-                        android:progressBackgroundTint="@color/resqgo_divider"/>
-
-                    <TextView
-                        android:id="@+id/tvGyroZ"
-                        android:layout_width="64dp"
-                        android:layout_height="wrap_content"
-                        android:text="0.00"
-                        android:textSize="12sp"
-                        android:textColor="@color/resqgo_text_primary"
-                        android:fontFamily="monospace"
-                        android:gravity="end"/>
-                </LinearLayout>
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Spacer -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="12dp"/>
-
-        <!-- Big SOS Panic Button -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSosPanic"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:layout_marginHorizontal="20dp"
-            android:text="🆘 SOS EMERGENCY"
-            android:textSize="22sp"
-            android:textStyle="bold"
+            android:layout_height="56dp"
             android:backgroundTint="@color/resqgo_alert"
+            android:text="🚨 SOS EMERGENCY"
             android:textColor="@color/white"
-            app:cornerRadius="16dp"/>
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="16dp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEndRide"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="@color/resqgo_surface"
+            android:text="@string/btn_end_ride"
+            android:textColor="@color/resqgo_text_primary"
+            android:textSize="14sp"
+            app:cornerRadius="16dp"
+            app:strokeColor="@color/resqgo_divider"
+            app:strokeWidth="1dp" />
     </LinearLayout>
-</ScrollView>
+
+    <!-- Diagnostics Bottom Sheet (Priority 7 in Information Hierarchy) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/bottomSheetDiagnostics"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:behavior_hideable="false"
+        app:behavior_peekHeight="46dp"
+        app:cardBackgroundColor="@color/resqgo_surface"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="16dp"
+        app:strokeColor="@color/resqgo_divider"
+        app:strokeWidth="1dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <View
+                android:layout_width="40dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@color/resqgo_divider" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="▲ Swipe Up: Sensor Diagnostics (Secondary View)"
+                android:textColor="@color/resqgo_text_secondary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <!-- Sensor Readouts Table -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="G-Force"
+                        android:textColor="@color/resqgo_text_secondary"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tvDiagGForce"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1.00 G"
+                        android:textColor="@color/resqgo_text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pitch (Gyro X)"
+                        android:textColor="@color/resqgo_text_secondary"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tvDiagGyroX"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.00 rad/s"
+                        android:textColor="@color/resqgo_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Roll (Gyro Y)"
+                        android:textColor="@color/resqgo_text_secondary"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tvDiagGyroY"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.00 rad/s"
+                        android:textColor="@color/resqgo_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GPS Lock"
+                        android:textColor="@color/resqgo_text_secondary"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tvDiagGps"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Acquiring..."
+                        android:textColor="@color/resqgo_success"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Current Coordinates"
+                        android:textColor="@color/resqgo_text_secondary"
+                        android:textSize="11sp" />
+
+                    <TextView
+                        android:id="@+id/tvDiagCoords"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-- , --"
+                        android:textColor="@color/resqgo_text_primary"
+                        android:textSize="13sp"
+                        android:fontFamily="monospace" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

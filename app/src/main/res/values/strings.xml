@@ -78,6 +78,27 @@
     <string name="rider_name_label">Your Name</string>
     <string name="rider_name_hint">Your name (shown in alerts)</string>
     <string name="sensitivity_label">Detection Sensitivity</string>
+    
+    <string-array name="sos_timer_options">
+        <item>30 seconds</item>
+        <item>40 seconds</item>
+        <item>1 minute</item>
+        <item>2 minutes</item>
+        <item>3 minutes</item>
+        <item>4 minutes</item>
+        <item>5 minutes</item>
+    </string-array>
+    
+    <integer-array name="sos_timer_values">
+        <item>30</item>
+        <item>40</item>
+        <item>60</item>
+        <item>120</item>
+        <item>180</item>
+        <item>240</item>
+        <item>300</item>
+    </integer-array>
+    
     <string name="sensitivity_low">Low (Major crashes only)</string>
     <string name="sensitivity_medium">Medium (Recommended)</string>
     <string name="sensitivity_high">High (Catches minor falls)</string>

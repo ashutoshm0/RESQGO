@@ -76,6 +76,7 @@ object SosDelivery {
     /**
      * Sends one SMS through the handset SIM and waits for the platform to confirm
      * it actually reached the network. Returns a real outcome, never an assumption.
+     * Iterates through available SIMs on dual-SIM devices to ensure delivery.
      */
     suspend fun sendSimSms(
         context: Context,
@@ -89,21 +90,72 @@ object SosDelivery {
             return SosOutcome(SosChannel.SIM_SMS, phone, false, "SMS permission not granted")
         }
 
-        val smsManager = try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                context.getSystemService(SmsManager::class.java)
-            } else {
-                @Suppress("DEPRECATION") SmsManager.getDefault()
+        val smsManagers = mutableListOf<SmsManager>()
+        try {
+            val subscriptionManager = context.getSystemService(android.telephony.SubscriptionManager::class.java)
+            if (subscriptionManager != null && ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+                val activeSubs = subscriptionManager.activeSubscriptionInfoList
+                if (activeSubs != null && activeSubs.isNotEmpty()) {
+                    for (sub in activeSubs) {
+                        smsManagers.add(SmsManager.getSmsManagerForSubscriptionId(sub.subscriptionId))
+                    }
+                }
             }
         } catch (e: Exception) {
-            return SosOutcome(SosChannel.SIM_SMS, phone, false, "no SMS service on device")
-        } ?: return SosOutcome(SosChannel.SIM_SMS, phone, false, "no SMS service on device")
+            Log.w(TAG, "Failed to get subscription info: ${e.message}")
+        }
 
+        if (smsManagers.isEmpty()) {
+            try {
+                val defaultSm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    context.getSystemService(SmsManager::class.java)
+                } else {
+                    @Suppress("DEPRECATION") SmsManager.getDefault()
+                }
+                if (defaultSm != null) smsManagers.add(defaultSm)
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to get default SmsManager: ${e.message}")
+            }
+        }
+
+        if (smsManagers.isEmpty()) {
+            return SosOutcome(SosChannel.SIM_SMS, phone, false, "no SMS service on device")
+        }
+
+        var lastOutcome: SosOutcome? = null
+        // Allocate time fairly among available SIMs
+        val perSimTimeout = timeoutMs / smsManagers.size
+
+        for (smsManager in smsManagers) {
+            val outcome = attemptSendWithManager(context, smsManager, phone, message, perSimTimeout)
+            lastOutcome = outcome
+            if (outcome.ok) {
+                return outcome // Success on this SIM!
+            }
+            Log.d(TAG, "SMS failed on one SIM (${outcome.detail}), trying next if available...")
+        }
+
+        return lastOutcome ?: SosOutcome(SosChannel.SIM_SMS, phone, false, "unknown failure")
+    }
+
+    private suspend fun attemptSendWithManager(
+        context: Context,
+        smsManager: SmsManager,
+        phone: String,
+        message: String,
+        timeoutMs: Long
+    ): SosOutcome {
         val action = "com.example.resqgo.SMS_SENT.${System.nanoTime()}"
 
         val result = withTimeoutOrNull(timeoutMs) {
             suspendCancellableCoroutine<SosOutcome> { cont ->
-                val parts = smsManager.divideMessage(message)
+                val parts = try {
+                    smsManager.divideMessage(message)
+                } catch (e: Exception) {
+                    if (cont.isActive) cont.resume(SosOutcome(SosChannel.SIM_SMS, phone, false, "divideMessage threw: ${e.javaClass.simpleName}"))
+                    return@suspendCancellableCoroutine
+                }
+                
                 var reported = 0
                 var firstFailure: Int? = null
 

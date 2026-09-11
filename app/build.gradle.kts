@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.viewpager2)
+    implementation(libs.androidx.security.crypto)
     
     // Lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.ktx)

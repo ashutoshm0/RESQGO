@@ -82,6 +82,7 @@ class RidingActivity : AppCompatActivity(), TripOptionsSheet.Listener {
     private val stopMarkers = mutableListOf<Marker>()
     private var activeRoutePolyline: Polyline? = null
     private val alternativePolylines = mutableListOf<Polyline>()
+    private var currentRouteResult: com.example.resqgo.navigation.OSRMClient.RouteResult? = null
 
     private var currentRiderLatLng: GeoPoint? = null
     private var currentDestinationLatLng: GeoPoint? = null
@@ -549,8 +550,8 @@ class RidingActivity : AppCompatActivity(), TripOptionsSheet.Listener {
         }
     }
 
-    /** Uses Android's built-in Geocoder — no Maps API key involved. */
-    private fun resolveQueryToGeoPoint(query: String): GeoPoint? {
+    /** Uses OSM Nominatim as a reliable alternative to Android Geocoder. */
+    private suspend fun resolveQueryToGeoPoint(query: String): GeoPoint? {
         // 1. Try parsing directly as "lat, lng"
         val parts = query.split(",", " ").filter { it.isNotBlank() }
         if (parts.size >= 2) {
@@ -560,15 +561,8 @@ class RidingActivity : AppCompatActivity(), TripOptionsSheet.Listener {
                 return GeoPoint(lat, lng)
             }
         }
-        // 2. Fall back to the platform geocoder
-        return try {
-            @Suppress("DEPRECATION")
-            val results: List<Address>? =
-                Geocoder(this, Locale.getDefault()).getFromLocationName(query, 1)
-            results?.firstOrNull()?.let { GeoPoint(it.latitude, it.longitude) }
-        } catch (e: Exception) {
-            null
-        }
+        // 2. Fall back to Nominatim
+        return com.example.resqgo.navigation.NominatimClient.searchPlace(query)
     }
 
     private fun displayDestinationAndRoutes(destination: GeoPoint, title: String) {
@@ -634,10 +628,20 @@ class RidingActivity : AppCompatActivity(), TripOptionsSheet.Listener {
         return metres / 1000f
     }
 
-    private fun routeKm(flavour: RouteFlavour): Float =
-        baseDistanceKm() * flavour.distanceFactor * routePrefs.distancePenalty()
+    private fun routeKm(flavour: RouteFlavour): Float {
+        val base = currentRouteResult?.let { (it.distanceMetres / 1000.0).toFloat() } ?: baseDistanceKm()
+        return base * flavour.distanceFactor * routePrefs.distancePenalty()
+    }
 
     private fun etaMinutes(flavour: RouteFlavour): Int {
+        val baseMinutes = currentRouteResult?.let { (it.durationSeconds / 60.0).toFloat() } 
+        
+        if (baseMinutes != null) {
+            val adjusted = baseMinutes * flavour.speedFactor * routePrefs.speedPenalty()
+            return adjusted.roundToInt().coerceAtLeast(1)
+        }
+        
+        // Fallback to straight-line maths
         val speed = routePrefs.travelMode.avgSpeedKmh * flavour.speedFactor * routePrefs.speedPenalty()
         if (speed <= 0f) return 1
         return (routeKm(flavour) / speed * 60f).roundToInt().coerceAtLeast(1)
@@ -695,52 +699,33 @@ class RidingActivity : AppCompatActivity(), TripOptionsSheet.Listener {
         alternativePolylines.forEach { binding.mapView.overlays.remove(it) }
         alternativePolylines.clear()
 
-        // Waypoints run rider -> stops -> destination so added stops bend the line.
         val via = buildList {
             add(origin)
             stops.forEach { add(it.second) }
             add(dest)
         }
 
-        activeRoutePolyline = Polyline().apply {
-            setPoints(curveThrough(via, 0.002))
-            outlinePaint.color = Color.parseColor(selectedRoute.colorHex)
-            outlinePaint.strokeWidth = 14f
-        }.also { binding.mapView.overlays.add(it) }
-
-        listOf(0.0, -0.003).forEach { curvature ->
-            val alt = Polyline().apply {
-                setPoints(curveThrough(via, curvature))
-                outlinePaint.color = Color.parseColor("#80718096")
-                outlinePaint.strokeWidth = 9f
+        CoroutineScope(Dispatchers.Main).launch {
+            val routeResult = com.example.resqgo.navigation.OSRMClient.getRoute(via)
+            if (routeResult != null) {
+                currentRouteResult = routeResult
+                refreshRouteEtas()
+                selectRoute(selectedRoute)
+                
+                // Remove again in case user rapidly changed destination
+                activeRoutePolyline?.let { binding.mapView.overlays.remove(it) }
+                
+                activeRoutePolyline = Polyline().apply {
+                    setPoints(routeResult.points)
+                    outlinePaint.color = Color.parseColor(selectedRoute.colorHex)
+                    outlinePaint.strokeWidth = 14f
+                }.also { binding.mapView.overlays.add(it) }
+                
+                binding.mapView.invalidate()
+            } else {
+                Toast.makeText(this@RidingActivity, "Routing service unavailable", Toast.LENGTH_SHORT).show()
             }
-            alternativePolylines.add(alt)
-            binding.mapView.overlays.add(alt)
         }
-        binding.mapView.invalidate()
-    }
-
-    /** Road-like curve through every waypoint in order. */
-    private fun curveThrough(waypoints: List<GeoPoint>, curvature: Double): List<GeoPoint> {
-        val out = mutableListOf<GeoPoint>()
-        for (i in 1 until waypoints.size) {
-            out.addAll(generateWaypoints(waypoints[i - 1], waypoints[i], curvature))
-        }
-        return out
-    }
-
-    private fun generateWaypoints(start: GeoPoint, end: GeoPoint, curvature: Double): List<GeoPoint> {
-        val points = mutableListOf(start)
-        val steps = 8
-        for (i in 1 until steps) {
-            val f = i.toDouble() / steps
-            val lat = start.latitude + f * (end.latitude - start.latitude)
-            val lng = start.longitude + f * (end.longitude - start.longitude)
-            val offset = Math.sin(f * Math.PI) * curvature
-            points.add(GeoPoint(lat + offset, lng - offset))
-        }
-        points.add(end)
-        return points
     }
 
     // ── Live position ────────────────────────────────────────────────────────

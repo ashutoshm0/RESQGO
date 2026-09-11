@@ -59,12 +59,18 @@ object PermissionHelper {
     fun hasSendSms(context: Context): Boolean =
         has(context, Manifest.permission.SEND_SMS)
 
+    fun hasReadPhoneState(context: Context): Boolean =
+        has(context, Manifest.permission.READ_PHONE_STATE)
+
     /**
      * Requested separately, at ride start rather than first launch: asking for SMS
      * in the opening batch looks alarming and trips Play Protect heuristics on
      * sideloaded builds. Without it the SIM SOS layer can never fire.
      */
-    fun smsPermission(): Array<String> = arrayOf(Manifest.permission.SEND_SMS)
+    fun smsPermission(): Array<String> = arrayOf(
+        Manifest.permission.SEND_SMS,
+        Manifest.permission.READ_PHONE_STATE
+    )
 
     /** Everything required before a ride may start. */
     fun missingForRide(context: Context): List<String> = buildList {

@@ -2,6 +2,8 @@ package com.example.resqgo.data.local
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -18,10 +20,47 @@ enum class ThemeMode {
 
 class UserPreferences(context: Context) {
 
-    private val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences
+
+    init {
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        prefs = try {
+            EncryptedSharedPreferences.create(
+                context,
+                PREF_NAME_SECURE,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (e: Exception) {
+            context.getSharedPreferences(PREF_NAME_FALLBACK, Context.MODE_PRIVATE)
+        }
+
+        // Migrate legacy unencrypted preferences if they exist
+        val legacyPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        if (legacyPrefs.all.isNotEmpty()) {
+            val editor = prefs.edit()
+            for ((key, value) in legacyPrefs.all) {
+                when (value) {
+                    is String -> editor.putString(key, value)
+                    is Int -> editor.putInt(key, value)
+                    is Long -> editor.putLong(key, value)
+                    is Float -> editor.putFloat(key, value)
+                    is Boolean -> editor.putBoolean(key, value)
+                }
+            }
+            editor.apply()
+            legacyPrefs.edit().clear().apply()
+        }
+    }
 
     companion object {
         private const val PREF_NAME = "resqgo_prefs"
+        private const val PREF_NAME_SECURE = "resqgo_secure_prefs"
+        private const val PREF_NAME_FALLBACK = "resqgo_secure_prefs_fallback"
         private const val KEY_HAS_COMPLETED_ONBOARDING = "has_completed_onboarding"
         private const val KEY_RIDER_NAME               = "rider_name"
         private const val KEY_IS_RIDING_ONLINE          = "is_riding_online"

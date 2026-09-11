@@ -262,7 +262,7 @@ class HomeActivity : AppCompatActivity() {
      * the SOS then falls back to opening the messaging app.
      */
     private fun confirmSmsThenRide() {
-        if (PermissionHelper.hasSendSms(this) || prefs.smsPromptShown) {
+        if ((PermissionHelper.hasSendSms(this) && PermissionHelper.hasReadPhoneState(this)) || prefs.smsPromptShown) {
             doStartRide()
             return
         }

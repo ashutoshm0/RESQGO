@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Splash version of the launcher mark: cream artwork on the terracotta disc. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FAF5ED" android:pathData="M54,22 L84,33 V56 C84,70 71,81 54,87 C37,81 24,70 24,56 V33 Z" />
+    <path android:fillColor="#D2691E" android:pathData="M49.5,35 h9 v8.5 h8.5 v9 h-8.5 v8.5 h-9 v-8.5 h-8.5 v-9 h8.5 Z" />
+    <path android:fillColor="#D2691E" android:pathData="M41,72 a4.6,4.6 0 1,0 9.2,0 a4.6,4.6 0 1,0 -9.2,0 Z" />
+    <path android:fillColor="#D2691E" android:pathData="M57.8,72 a4.6,4.6 0 1,0 9.2,0 a4.6,4.6 0 1,0 -9.2,0 Z" />
+    <path android:fillColor="#D2691E" android:pathData="M46.5,70 h15 v3.6 h-15 Z" />
+</vector>

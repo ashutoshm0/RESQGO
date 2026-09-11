@@ -1,8 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android" 
-    android:width="108dp" android:height="108dp" 
-    android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#2D3142" android:pathData="M54,20L24,33v26c0,24.31 16.89,47.03 30,52.34C67.11,106.03 84,83.31 84,59V33L54,20z"/>
-    <path android:fillColor="#F4B41A" android:pathData="M54,28l-23.3,10.1v20.9c0,19.33 13.52,37.3 23.3,41.43c9.78,-4.13 23.3,-22.1 23.3,-41.43V38.1L54,28z"/>
-    <path android:fillColor="#D95D39" android:pathData="M64,52h-6v-6c0,-2.21 -1.79,-4 -4,-4s-4,1.79 -4,4v6h-6c-2.21,0 -4,1.79 -4,4s1.79,4 4,4h6v6c0,2.21 1.79,4 4,4s4,-1.79 4,-4v-6h6c2.21,0 4,-1.79 4,-4S66.21,52 64,52z"/>
+<!--
+  RESQGO launcher mark — the spec's preferred concept:
+  protective shield + emergency cross + two-wheeler.
+  The shield carries the mass so it reads at 48 px; the cross states
+  "emergency"; the two wheels at the base state "two-wheeler".
+  All artwork sits inside the 66dp adaptive-icon safe zone.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Protective shield -->
+    <path
+        android:fillColor="#FAF5ED"
+        android:pathData="M54,22 L84,33 V56 C84,70 71,81 54,87 C37,81 24,70 24,56 V33 Z" />
+
+    <!-- Emergency cross -->
+    <path
+        android:fillColor="#D2691E"
+        android:pathData="M49.5,35 h9 v8.5 h8.5 v9 h-8.5 v8.5 h-9 v-8.5 h-8.5 v-9 h8.5 Z" />
+
+    <!-- Two-wheeler: wheels + frame bar at the shield base -->
+    <path
+        android:fillColor="#D2691E"
+        android:pathData="M41,72 a4.6,4.6 0 1,0 9.2,0 a4.6,4.6 0 1,0 -9.2,0 Z" />
+    <path
+        android:fillColor="#D2691E"
+        android:pathData="M57.8,72 a4.6,4.6 0 1,0 9.2,0 a4.6,4.6 0 1,0 -9.2,0 Z" />
+    <path
+        android:fillColor="#D2691E"
+        android:pathData="M46.5,70 h15 v3.6 h-15 Z" />
 </vector>

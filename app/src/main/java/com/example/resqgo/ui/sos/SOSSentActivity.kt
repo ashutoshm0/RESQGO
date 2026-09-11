@@ -1,8 +1,13 @@
 package com.example.resqgo.ui.sos
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import com.example.resqgo.util.applySystemBarPadding
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
@@ -14,6 +19,8 @@ import com.example.resqgo.data.local.UserPreferences
 import com.example.resqgo.databinding.ActivitySosSentBinding
 import com.example.resqgo.service.RideMonitoringService
 import com.example.resqgo.sos.SOSManager
+import com.example.resqgo.sos.SosChannel
+import com.example.resqgo.sos.SosDelivery
 import com.example.resqgo.ui.home.HomeActivity
 
 class SOSSentActivity : AppCompatActivity() {
@@ -28,11 +35,33 @@ class SOSSentActivity : AppCompatActivity() {
     private var smsFailed     = false
     private var contactPhones = emptyArray<String>()
     private var contactNames  = emptyArray<String>()
+    private var sosMessage    = ""
+    private var anySmsDelivered = false
+
+    /** Renders each channel's real outcome as SOSManager reports it. */
+    private val statusReceiver = object : BroadcastReceiver() {
+        override fun onReceive(c: Context?, i: Intent?) {
+            if (i?.action != SosDelivery.ACTION_STATUS) return
+            val channel = runCatching {
+                SosChannel.valueOf(i.getStringExtra(SosDelivery.EXTRA_CHANNEL) ?: "")
+            }.getOrNull() ?: return
+            val ok = i.getBooleanExtra(SosDelivery.EXTRA_OK, false)
+            val target = i.getStringExtra(SosDelivery.EXTRA_TARGET) ?: ""
+            val detail = i.getStringExtra(SosDelivery.EXTRA_DETAIL) ?: ""
+            addStatusRow(channel, target, ok, detail)
+
+            if (ok && (channel == SosChannel.SIM_SMS || channel == SosChannel.INTERNET_SMS)) {
+                anySmsDelivered = true
+            }
+            refreshHeadline()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding    = ActivitySosSentBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.applySystemBarPadding(top = true, bottom = true)
         prefs      = UserPreferences(this)
         sosManager = SOSManager(this)
         RideMonitoringService.resetConfirmationFlag()
@@ -45,6 +74,7 @@ class SOSSentActivity : AppCompatActivity() {
         smsFailed     = intent.getBooleanExtra("smsFailed",         false)
         contactPhones = intent.getStringArrayExtra("contactPhones") ?: emptyArray()
         contactNames  = intent.getStringArrayExtra("contactNames")  ?: emptyArray()
+        sosMessage    = intent.getStringExtra("sosMessage")          ?: ""
 
         setupUI(notified, manually)
         setupListeners()
@@ -55,18 +85,16 @@ class SOSSentActivity : AppCompatActivity() {
     private fun setupUI(contactsNotified: Int, manuallyTriggered: Boolean) {
         binding.tvSosTitle.text = if (manuallyTriggered) "🚨 Manual SOS Sent" else "🚨 SOS Alert Sent"
 
-        // Contacts notification status
-        if (smsFailed || contactsNotified == 0) {
-            binding.tvContactsNotified.text =
-                "⚠️ SMS blocked — use WhatsApp buttons below to alert contacts"
+        // Start honest: nothing is confirmed until a channel reports back.
+        if (contactsNotified == 0) {
+            binding.tvContactsNotified.text = "⚠️ No emergency contacts saved"
             binding.tvContactsNotified.setTextColor(
-                ContextCompat.getColor(this, R.color.resqgo_warning)
+                ContextCompat.getColor(this, R.color.resqgo_alert)
             )
         } else {
-            binding.tvContactsNotified.text =
-                "✅ $contactsNotified contact(s) notified via SMS"
+            binding.tvContactsNotified.text = "Contacting $contactsNotified contact(s)…"
             binding.tvContactsNotified.setTextColor(
-                ContextCompat.getColor(this, R.color.resqgo_success)
+                ContextCompat.getColor(this, R.color.resqgo_warning)
             )
         }
 
@@ -122,6 +150,13 @@ class SOSSentActivity : AppCompatActivity() {
             }
         }
 
+        // Layer 3 fallback: opens the messaging app pre-filled. Needs no
+        // permission, but the rider has to press Send.
+        binding.btnSmsFallback.setOnClickListener {
+            val primary = contactPhones.firstOrNull() ?: return@setOnClickListener
+            sosManager.openSmsIntent(primary, sosMessage)
+        }
+
         // I'm Safe → go home
         binding.btnImSafe.setOnClickListener { goHome() }
     }
@@ -164,6 +199,60 @@ class SOSSentActivity : AppCompatActivity() {
             }
             container.addView(button)
         }
+    }
+
+    /** One row per delivery attempt: what was tried, where, and what happened. */
+    private fun addStatusRow(channel: SosChannel, target: String, ok: Boolean, detail: String) {
+        val row = TextView(this).apply {
+            val mark = if (ok) "✅" else "❌"
+            text = "$mark  ${channel.label} → $target\n     $detail"
+            textSize = 13f
+            setPadding(0, 6, 0, 6)
+            setTextColor(
+                ContextCompat.getColor(
+                    this@SOSSentActivity,
+                    if (ok) R.color.resqgo_success else R.color.resqgo_alert
+                )
+            )
+        }
+        binding.deliveryStatusContainer.addView(row)
+
+        // Offer the no-permission SMS fallback the moment messaging fails.
+        if (!ok && (channel == SosChannel.SIM_SMS || channel == SosChannel.INTERNET_SMS)) {
+            binding.btnSmsFallback.visibility = View.VISIBLE
+        }
+    }
+
+    private fun refreshHeadline() {
+        if (anySmsDelivered) {
+            binding.tvContactsNotified.text = "✅ Alert delivered to your emergency contact(s)"
+            binding.tvContactsNotified.setTextColor(
+                ContextCompat.getColor(this, R.color.resqgo_success)
+            )
+            binding.btnSmsFallback.visibility = View.GONE
+        } else {
+            binding.tvContactsNotified.text =
+                "⚠️ SMS not confirmed — use the buttons below to reach your contacts"
+            binding.tvContactsNotified.setTextColor(
+                ContextCompat.getColor(this, R.color.resqgo_alert)
+            )
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val filter = IntentFilter(SosDelivery.ACTION_STATUS)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(statusReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("UnspecifiedRegisterReceiverFlag")
+            registerReceiver(statusReceiver, filter)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        runCatching { unregisterReceiver(statusReceiver) }
     }
 
     private fun goHome() {

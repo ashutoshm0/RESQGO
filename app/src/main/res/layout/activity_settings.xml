@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:clipToPadding="false"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/resqgo_bg"
+    android:background="?android:attr/colorBackground"
     android:fillViewport="true">
 
     <LinearLayout
@@ -19,7 +20,7 @@
             android:text="Settings"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="@color/resqgo_text_primary"
+            android:textColor="?attr/colorOnBackground"
             android:layout_marginTop="32dp"/>
 
         <!-- Rider Profile -->
@@ -27,7 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
             
@@ -43,7 +44,7 @@
                     android:text="@string/rider_name_label"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="@color/resqgo_text_secondary"/>
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
                     
                 <EditText
                     android:id="@+id/etRiderName"
@@ -51,7 +52,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:hint="@string/rider_name_hint"
-                    android:textColor="@color/resqgo_text_primary"
+                    android:textColor="?attr/colorOnBackground"
                     android:background="@android:color/transparent"
                     android:textSize="16sp"/>
             </LinearLayout>
@@ -62,7 +63,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
             
@@ -78,7 +79,7 @@
                     android:text="@string/emergency_contacts_title"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="@color/resqgo_text_secondary"/>
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
                     
                 <Button
                     android:id="@+id/btnManageContacts"
@@ -87,114 +88,11 @@
                     android:layout_marginTop="12dp"
                     android:text="@string/btn_manage_contacts"
                     android:textSize="14sp"
-                    android:backgroundTint="@color/resqgo_primary"
+                    android:backgroundTint="?attr/colorPrimary"
                     android:textColor="@color/white"
                     app:cornerRadius="10dp"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
-        <!-- Fast2SMS — Auto SMS without permission -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/resqgo_surface"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="20dp"
-                android:orientation="vertical">
-
-                <!-- Header row -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="📱 AUTO SMS (Fast2SMS)"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/resqgo_text_secondary"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="No SMS permission needed — uses internet"
-                            android:textSize="11sp"
-                            android:textColor="@color/resqgo_secondary"
-                            android:layout_marginTop="2dp"/>
-                    </LinearLayout>
-
-                    <Button
-                        android:id="@+id/btnFast2smsHelp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:text="How to setup?"
-                        android:textSize="11sp"
-                        android:backgroundTint="@color/resqgo_divider"
-                        android:textColor="@color/resqgo_text_secondary"
-                        android:paddingHorizontal="12dp"
-                        app:cornerRadius="18dp"/>
-                </LinearLayout>
-
-                <EditText
-                    android:id="@+id/etFast2smsKey"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:hint="Paste Fast2SMS API key here..."
-                    android:textColor="@color/resqgo_text_primary"
-                    android:textSize="13sp"
-                    android:fontFamily="monospace"
-                    android:background="@android:color/transparent"
-                    android:inputType="textVisiblePassword"
-                    android:maxLines="2"/>
-
-                <!-- Test SMS button row -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:id="@+id/tvSmsTestResult"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Tap Test to verify key"
-                        android:textSize="12sp"
-                        android:textColor="@color/resqgo_text_secondary"/>
-
-                    <Button
-                        android:id="@+id/btnTestSms"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:text="Send Test SMS"
-                        android:textSize="11sp"
-                        android:backgroundTint="@color/resqgo_secondary"
-                        android:textColor="@color/white"
-                        android:paddingHorizontal="14dp"
-                        app:cornerRadius="18dp"/>
-                </LinearLayout>
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
 
         <!-- Detection Sensitivity -->
 
@@ -202,7 +100,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
             
@@ -218,7 +116,7 @@
                     android:text="@string/sensitivity_label"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="@color/resqgo_text_secondary"/>
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
                     
                 <RadioGroup
                     android:id="@+id/rgSensitivity"
@@ -231,21 +129,21 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/sensitivity_low"
-                        android:textColor="@color/resqgo_text_primary"/>
+                        android:textColor="?attr/colorOnBackground"/>
                         
                     <RadioButton
                         android:id="@+id/rbMedium"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/sensitivity_medium"
-                        android:textColor="@color/resqgo_text_primary"/>
+                        android:textColor="?attr/colorOnBackground"/>
                         
                     <RadioButton
                         android:id="@+id/rbHigh"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/sensitivity_high"
-                        android:textColor="@color/resqgo_text_primary"/>
+                        android:textColor="?attr/colorOnBackground"/>
                 </RadioGroup>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -255,7 +153,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
             
@@ -268,37 +166,231 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Crash Confirmation Timer"
+                    android:text="@string/timer_section_title"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="@color/resqgo_text_secondary"/>
-                    
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="How long should RESQGO wait for your response before automatically calling for help?"
-                    android:textSize="11sp"
-                    android:textColor="@color/resqgo_text_primary"
-                    android:alpha="0.8"/>
-                    
-                <Spinner
-                    android:id="@+id/spinnerSosTimer"
+                    android:text="@string/timer_section_desc"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
+
+                <!-- Big, always-visible read-out of the current choice.
+                     The old UI only revealed the value through a tiny checked
+                     chip, which is what made this setting hard to use. -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTimerDown"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:padding="0dp"
+                        android:text="−"
+                        android:textSize="24sp"
+                        android:textColor="?attr/colorPrimary"
+                        android:contentDescription="@string/timer_shorter"
+                        app:cornerRadius="14dp"
+                        app:strokeColor="?attr/colorOutline" />
+
+                    <TextView
+                        android:id="@+id/tvTimerValue"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="30 seconds"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="30sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTimerUp"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:padding="0dp"
+                        android:text="+"
+                        android:textSize="24sp"
+                        android:textColor="?attr/colorPrimary"
+                        android:contentDescription="@string/timer_longer"
+                        app:cornerRadius="14dp"
+                        app:strokeColor="?attr/colorOutline" />
+                </LinearLayout>
+
+                <!-- Large wrapping chips: every option visible at once, 54dp
+                     touch targets, filled with the brand colour when chosen. -->
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupTimer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    app:singleSelection="true"
+                    app:selectionRequired="true"
+                    app:chipSpacingHorizontal="8dp"
+                    app:chipSpacingVertical="8dp">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip30s"
+                        style="@style/Widget.RESQGO.TimerChip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="30s" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip40s"
+                        style="@style/Widget.RESQGO.TimerChip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="40s" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip1m"
+                        style="@style/Widget.RESQGO.TimerChip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1 min" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip2m"
+                        style="@style/Widget.RESQGO.TimerChip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2 min" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip3m"
+                        style="@style/Widget.RESQGO.TimerChip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3 min" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip4m"
+                        style="@style/Widget.RESQGO.TimerChip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="4 min" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip5m"
+                        style="@style/Widget.RESQGO.TimerChip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5 min" />
+
+                </com.google.android.material.chip.ChipGroup>
+
+                <TextView
+                    android:id="@+id/tvTimerSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/timer_section_desc"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Diagnostics — only visible after RESQGO has crashed once. -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardDiagnostics"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/diagnostics_title"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvDiagnosticsHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/diagnostics_crash_found"
+                    android:textColor="?attr/colorError"
+                    android:textSize="13sp" />
+
+                <Button
+                    android:id="@+id/btnViewCrash"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:layout_marginTop="12dp"
-                    android:backgroundTint="@color/resqgo_text_primary"
-                    android:entries="@array/sos_timer_options"/>
-                    
+                    android:backgroundTint="?attr/colorError"
+                    android:text="@string/diagnostics_title"
+                    android:textColor="?attr/colorOnError"
+                    android:textSize="13sp"
+                    app:cornerRadius="10dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+
+            <!-- Dark Mode Toggle -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="20dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Dark Mode"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnBackground"/>
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchDarkMode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
         <!-- Permissions -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
 
@@ -314,7 +406,7 @@
                     android:text="@string/permissions_status"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="@color/resqgo_text_secondary"/>
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
 
                 <!-- Location row -->
                 <LinearLayout
@@ -330,7 +422,7 @@
                         android:layout_weight="1"
                         android:text="@string/perm_location"
                         android:textSize="14sp"
-                        android:textColor="@color/resqgo_text_primary"/>
+                        android:textColor="?attr/colorOnBackground"/>
 
                     <TextView
                         android:id="@+id/tvPermLocation"
@@ -355,7 +447,7 @@
                         android:layout_weight="1"
                         android:text="@string/perm_phone"
                         android:textSize="14sp"
-                        android:textColor="@color/resqgo_text_primary"/>
+                        android:textColor="?attr/colorOnBackground"/>
 
                     <TextView
                         android:id="@+id/tvPermPhone"
@@ -385,7 +477,7 @@
                             android:layout_height="wrap_content"
                             android:text="SMS (SIM)"
                             android:textSize="14sp"
-                            android:textColor="@color/resqgo_text_primary"/>
+                            android:textColor="?attr/colorOnBackground"/>
 
                         <TextView
                             android:id="@+id/tvSmsHint"
@@ -393,7 +485,7 @@
                             android:layout_height="wrap_content"
                             android:text="Optional — tap Grant to enable SIM SMS"
                             android:textSize="11sp"
-                            android:textColor="@color/resqgo_text_secondary"/>
+                            android:textColor="?attr/colorOnSurfaceVariant"/>
 
                     </LinearLayout>
 
@@ -403,7 +495,7 @@
                         android:layout_height="wrap_content"
                         android:text="Not granted"
                         android:textSize="13sp"
-                        android:textColor="@color/resqgo_warning"/>
+                        android:textColor="?attr/colorPrimary"/>
 
                     <Button
                         android:id="@+id/btnGrantSms"
@@ -412,7 +504,7 @@
                         android:layout_marginStart="8dp"
                         android:text="Grant"
                         android:textSize="11sp"
-                        android:backgroundTint="@color/resqgo_primary"
+                        android:backgroundTint="?attr/colorPrimary"
                         android:textColor="#0F1923"
                         android:paddingHorizontal="12dp"
                         app:cornerRadius="16dp"/>
@@ -431,7 +523,7 @@
             android:text="@string/save"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:backgroundTint="@color/resqgo_primary"
+            android:backgroundTint="?attr/colorPrimary"
             android:textColor="@color/white"
             app:cornerRadius="12dp"/>
 

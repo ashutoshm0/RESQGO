@@ -8,7 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/resqgo_bg"
+        android:background="?android:attr/colorBackground"
         android:padding="32dp"
         android:orientation="vertical">
         
@@ -25,7 +25,7 @@
             android:text="@string/onboarding_contact_title"
             android:textSize="26sp"
             android:textStyle="bold"
-            android:textColor="@color/resqgo_text_primary"
+            android:textColor="?attr/colorOnBackground"
             android:layout_marginTop="16dp"
             android:gravity="center"/>
             
@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:text="@string/onboarding_contact_subtitle"
             android:textSize="15sp"
-            android:textColor="@color/resqgo_text_secondary"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:lineSpacingMultiplier="1.4"/>
@@ -43,7 +43,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
-            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
             
@@ -58,8 +58,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/contact_name_hint"
-                    android:textColor="@color/resqgo_text_primary"
-                    android:textColorHint="@color/resqgo_text_secondary"
+                    android:textColor="?attr/colorOnBackground"
+                    android:textColorHint="?attr/colorOnSurfaceVariant"
                     android:inputType="textPersonName"
                     android:textSize="16sp"
                     android:background="@android:color/transparent"
@@ -68,15 +68,15 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@color/resqgo_divider"/>
+                    android:background="?attr/colorOutline"/>
                     
                 <EditText
                     android:id="@+id/etContactPhone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/contact_phone_hint"
-                    android:textColor="@color/resqgo_text_primary"
-                    android:textColorHint="@color/resqgo_text_secondary"
+                    android:textColor="?attr/colorOnBackground"
+                    android:textColorHint="?attr/colorOnSurfaceVariant"
                     android:inputType="phone"
                     android:textSize="16sp"
                     android:background="@android:color/transparent"
@@ -86,15 +86,15 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@color/resqgo_divider"/>
+                    android:background="?attr/colorOutline"/>
                     
                 <EditText
                     android:id="@+id/etContactRelation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/contact_relation_hint"
-                    android:textColor="@color/resqgo_text_primary"
-                    android:textColorHint="@color/resqgo_text_secondary"
+                    android:textColor="?attr/colorOnBackground"
+                    android:textColorHint="?attr/colorOnSurfaceVariant"
                     android:inputType="textCapSentences"
                     android:textSize="16sp"
                     android:background="@android:color/transparent"
@@ -109,7 +109,7 @@
             android:layout_height="60dp"
             android:layout_marginTop="28dp"
             android:text="@string/btn_next"
-            android:backgroundTint="@color/resqgo_primary"
+            android:backgroundTint="?attr/colorPrimary"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"

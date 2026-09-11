@@ -3,8 +3,12 @@ package com.example.resqgo.data.repository
 import com.example.resqgo.data.local.RideEvent
 import com.example.resqgo.data.local.RideEventDao
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeoutOrNull
 import android.util.Log
 
 class RideRepository(private val rideEventDao: RideEventDao) {
@@ -17,6 +21,9 @@ class RideRepository(private val rideEventDao: RideEventDao) {
     }
     
     private val EVENTS_COLLECTION = "crash_events"
+
+    /** Cloud sync must never outlive an emergency. */
+    private val FIRESTORE_TIMEOUT_MS = 10_000L
 
     // Retrieve all events for history log
     val allEvents: Flow<List<RideEvent>> = rideEventDao.getAllEventsFlow()
@@ -43,10 +50,15 @@ class RideRepository(private val rideEventDao: RideEventDao) {
             durationMs = durationMs,
             distanceKm = distanceKm
         )
+        // The local write is the part that must succeed. Cloud sync is
+        // best-effort and is deliberately NOT awaited here — an unreachable
+        // Firestore used to block this call indefinitely, which stalled the
+        // SOS coroutine before it could place the emergency phone call.
         rideEventDao.insertEvent(event)
-        
-        // Trigger sync attempt immediately
-        syncPendingEvents()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            runCatching { syncPendingEvents() }
+        }
     }
 
     // Try to sync unsynced events to Firestore
@@ -75,9 +87,15 @@ class RideRepository(private val rideEventDao: RideEventDao) {
                 )
                 
                 // Use the timestamp as the document ID for uniqueness (or let Firebase auto-generate)
-                firestore.collection(EVENTS_COLLECTION)
-                    .add(eventMap)
-                    .await()
+                // Firestore queues writes offline and the task only completes
+                // once the server acknowledges, so it needs a hard deadline.
+                val acked = withTimeoutOrNull(FIRESTORE_TIMEOUT_MS) {
+                    firestore.collection(EVENTS_COLLECTION).add(eventMap).await()
+                }
+                if (acked == null) {
+                    Log.w("RideRepository", "Firestore sync timed out; will retry later")
+                    continue
+                }
                 
                 Log.d("RideRepository", "Successfully synced event: ${event.timestamp}")
                 

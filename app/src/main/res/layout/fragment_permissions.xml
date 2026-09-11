@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/resqgo_bg"
+    android:background="?android:attr/colorBackground"
     android:padding="32dp"
     android:orientation="vertical"
     android:gravity="center_horizontal">
@@ -21,7 +21,7 @@
         android:text="@string/permissions_title"
         android:textSize="26sp"
         android:textStyle="bold"
-        android:textColor="@color/resqgo_text_primary"
+        android:textColor="?attr/colorOnBackground"
         android:layout_marginTop="16dp"
         android:gravity="center"/>
 
@@ -30,7 +30,7 @@
         android:layout_height="wrap_content"
         android:text="@string/permissions_desc"
         android:textSize="15sp"
-        android:textColor="@color/resqgo_text_secondary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:layout_marginTop="12dp"
         android:gravity="center"
         android:lineSpacingMultiplier="1.5"/>
@@ -41,7 +41,7 @@
         android:layout_height="60dp"
         android:layout_marginTop="40dp"
         android:text="@string/btn_allow"
-        android:backgroundTint="@color/resqgo_primary"
+        android:backgroundTint="?attr/colorPrimary"
         android:textColor="@color/white"
         android:textSize="16sp"
         android:textStyle="bold"

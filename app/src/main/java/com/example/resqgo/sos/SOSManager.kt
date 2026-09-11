@@ -74,22 +74,55 @@ class SOSManager(private val context: Context) {
                     address           = address,
                     contactsNotified  = contacts.size,
                     manuallyTriggered = manuallyTriggered,
-                    smsFailed         = false, // We assume success initially, update UI later if needed
+                    // Nothing has been confirmed yet. The screen starts in a
+                    // "sending" state and is corrected by SosDelivery broadcasts.
+                    smsFailed         = true,
                     contacts          = contacts,
                     sosMessage        = plainMessage
                 )
             }
 
             // ✨ Step 3: Send messages via 3-layer fallback in background ✨
+            // Every attempt below reports its REAL outcome; nothing is assumed sent.
             val phones = contacts.map { it.phone }
 
-            val layer1ok = trySendViaSIM(phones, plainMessage)            // Layer 1: own SIM
-            val layer2ok = if (!layer1ok) trySendViaInternet(phones, plainMessage) else true  // Layer 2: internet
-            val smsSent = layer1ok || layer2ok
-            
-            Log.d(TAG, "SMS result: SIM=$layer1ok | Internet=$layer2ok | anyOk=$smsSent")
+            // Layer 1: handset SIM, confirmed by a sent-PendingIntent receipt.
+            var smsSent = false
+            for (phone in phones) {
+                val outcome = SosDelivery.sendSimSms(context, phone, plainMessage)
+                SosDelivery.broadcast(context, outcome)
+                if (outcome.ok) smsSent = true
+            }
 
-            // ✨ Step 4: Log event ✨
+            // Layer 2: internet SMS, only if the SIM route delivered nothing.
+            if (!smsSent) {
+                val layer2ok = trySendViaInternet(phones, plainMessage)
+                SosDelivery.broadcast(
+                    context,
+                    SosOutcome(
+                        SosChannel.INTERNET_SMS,
+                        phones.joinToString(", "),
+                        layer2ok,
+                        if (layer2ok) "accepted by gateway" else "gateway rejected or unreachable"
+                    )
+                )
+                if (layer2ok) smsSent = true
+            }
+
+            Log.d(TAG, "SMS delivered to at least one contact: $smsSent")
+
+            // ✨ Step 4: Call the PRIMARY contact ✨
+            // This runs BEFORE bookkeeping: placing the call is the single most
+            // important action after a crash and must not wait on anything else.
+            // Calling every contact in sequence causes telecom crashes on some
+            // Xiaomi/Samsung builds, so only the primary is dialled.
+            if (contacts.isNotEmpty()) {
+                withContext(Dispatchers.Main) {
+                    makeCall(contacts[0].phone)
+                }
+            }
+
+            // ✨ Step 5: Log the event (best effort, never blocking) ✨
             try {
                 repository.logEvent(
                     latitude = latitude,
@@ -102,52 +135,6 @@ class SOSManager(private val context: Context) {
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to log SOS event", e)
             }
-            
-            // ✨ Step 5: Automatically call the PRIMARY contact only ✨
-            // Calling sequentially causes telecom crashes on Xiaomi/Samsung.
-            if (contacts.isNotEmpty()) {
-                withContext(Dispatchers.Main) {
-                    makeCall(contacts[0].phone)
-                }
-            }
-        }
-    }
-
-    // ── LAYER 1: Own phone SIM via SmsManager ─────────────────────────────────
-    // This works if the user has manually granted SMS permission via:
-    // Settings → Apps → RESQGO → Permissions → SMS → Allow
-    private fun trySendViaSIM(phones: List<String>, message: String): Boolean {
-        val hasPerm = ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS) ==
-                PackageManager.PERMISSION_GRANTED
-
-        if (!hasPerm) {
-            Log.w(TAG, "Layer 1 skipped: SEND_SMS permission not granted. " +
-                    "User can grant via Settings > Apps > RESQGO > Permissions > SMS")
-            return false
-        }
-
-        var allSent = true
-        for (phone in phones) {
-            val sent = sendSingleSMS(phone, message)
-            if (!sent) allSent = false
-        }
-        return phones.isNotEmpty() && allSent
-    }
-
-    private fun sendSingleSMS(phone: String, message: String): Boolean {
-        return try {
-            val smsManager: SmsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                context.getSystemService(SmsManager::class.java)
-            } else {
-                @Suppress("DEPRECATION") SmsManager.getDefault()
-            }
-            val parts = smsManager.divideMessage(message)
-            smsManager.sendMultipartTextMessage(phone, null, parts, null, null)
-            Log.d(TAG, "✅ Layer 1 (SIM SMS) queued to $phone")
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Layer 1 (SIM SMS) failed to $phone", e)
-            false
         }
     }
 
@@ -180,19 +167,31 @@ class SOSManager(private val context: Context) {
     // ── Phone call ────────────────────────────────────────────────────────────
     private fun makeCall(phoneNumber: String): Boolean {
         val sanitized = phoneNumber.replace(Regex("[^0-9+]"), "")
-        val uri    = Uri.parse("tel:$sanitized")
-        val intent = if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE)
-                == PackageManager.PERMISSION_GRANTED) {
-            Intent(Intent.ACTION_CALL, uri)   // auto-dial
-        } else {
-            Intent(Intent.ACTION_DIAL, uri)   // opens dialer (needs user tap)
+        val uri = Uri.parse("tel:$sanitized")
+        val autoDial = ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) ==
+                PackageManager.PERMISSION_GRANTED
+
+        // ACTION_CALL places the call outright; without CALL_PHONE we can only
+        // open the dialer pre-filled, which still needs one tap from the rider.
+        val intent = Intent(if (autoDial) Intent.ACTION_CALL else Intent.ACTION_DIAL, uri).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         return try {
             context.startActivity(intent)
+            SosDelivery.broadcast(
+                context,
+                SosOutcome(
+                    SosChannel.PHONE_CALL, phoneNumber, true,
+                    if (autoDial) "call placed automatically" else "dialer opened — tap call"
+                )
+            )
             true
         } catch (e: Exception) {
             Log.e(TAG, "Call failed to $phoneNumber", e)
+            SosDelivery.broadcast(
+                context,
+                SosOutcome(SosChannel.PHONE_CALL, phoneNumber, false, "no app could place the call")
+            )
             false
         }
     }
@@ -207,15 +206,28 @@ class SOSManager(private val context: Context) {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             context.startActivity(intent)
+            SosDelivery.broadcast(
+                context,
+                SosOutcome(SosChannel.WHATSAPP, phoneNumber, true, "WhatsApp opened with the alert")
+            )
             true
         } catch (e: Exception) {
             try {
+                // Fallback: wa.me through the browser when the app is not installed.
                 val uri    = Uri.parse("https://wa.me/$formatted?text=${Uri.encode(message)}")
                 val intent = Intent(Intent.ACTION_VIEW, uri).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
                 context.startActivity(intent)
+                SosDelivery.broadcast(
+                    context,
+                    SosOutcome(SosChannel.WHATSAPP, phoneNumber, true, "opened via wa.me link")
+                )
                 true
             } catch (e2: Exception) {
                 Log.e(TAG, "WhatsApp unavailable", e2)
+                SosDelivery.broadcast(
+                    context,
+                    SosOutcome(SosChannel.WHATSAPP, phoneNumber, false, "WhatsApp not installed")
+                )
                 false
             }
         }

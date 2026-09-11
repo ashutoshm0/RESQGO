@@ -19,7 +19,11 @@
     <string name="greeting_afternoon">Good afternoon</string>
     <string name="greeting_evening">Good evening</string>
     <string name="home_tagline">Stay safe out there.</string>
-    <string name="btn_start_ride">START RIDE</string>
+    <string name="btn_start_ride">START RIDE WITH DESTINATION</string>
+    <string name="btn_start_ride_no_dest">Start Ride Without Destination</string>
+    <string name="sms_permission_title">Allow SOS text messages?</string>
+    <string name="sms_permission_message">RESQGO sends your location to your emergency contacts by SMS, which works even with no mobile data. Without this permission the SOS falls back to opening your messaging app, which needs you to press Send — hard to do after a crash.</string>
+    <string name="sms_permission_skip">Not now</string>
     <string name="btn_end_ride">End Ride</string>
     <string name="btn_sos">SOS</string>
     <string name="sos_confirm_title">Send SOS Alert?</string>
@@ -29,7 +33,7 @@
     <string name="end_ride_confirm">End this ride?</string>
     <string name="end_ride_message">Monitoring will stop. Are you sure?</string>
     <string name="yes_end_ride">Yes, End Ride</string>
-    <string name="status_monitoring">🛡️ Monitoring Active</string>
+    <string name="status_monitoring">Monitoring Active</string>
     <string name="status_ready">Ready to Ride</string>
     <string name="ride_duration">Ride Time: %1$s</string>
     <string name="monitoring_active_banner">Monitoring is active. Tap to return to ride.</string>
@@ -106,12 +110,126 @@
     <string name="perm_location">Location</string>
     <string name="perm_phone">Phone Call</string>
     <string name="perm_sms">SMS</string>
-    <string name="perm_granted">✓ Granted</string>
-    <string name="perm_denied">✗ Denied — tap to fix</string>
+    <string name="perm_granted">✅ Granted</string>
+    <string name="perm_denied">❌ Not granted</string>
     <string name="save">Save Settings</string>
     
     <!-- Misc -->
     <string name="sensor_unavailable">Sensor unavailable on this device</string>
     <string name="background_location_title">Background Location Needed</string>
     <string name="background_location_message">RESQGO needs \"Allow all the time\" location access to detect crashes while your screen is off.</string>
+
+    <!-- Theme Settings -->
+    <string name="theme_mode_light">Light</string>
+    <string name="theme_mode_dark">Dark</string>
+    <string name="theme_mode_system">System Default</string>
+    <string name="dark_mode_label">Dark Mode</string>
+    <string name="appearance_section">Appearance</string>
+    <string name="theme_toggle_description">Toggle dark mode</string>
+    <string name="switch_to_light">Switch to light mode</string>
+    <string name="switch_to_dark">Switch to dark mode</string>
+
+    <!-- Permissions &amp; failure recovery -->
+    <string name="open_settings">Open Settings</string>
+    <string name="perm_not_granted">Not granted</string>
+    <string name="rider_default_name">Rider</string>
+    <string name="allow_all_the_time">Allow all the time</string>
+    <string name="not_now">Not now</string>
+    <string name="permission_warning">%1$s permission is off. RESQGO cannot protect you until you turn it on. Tap to fix.</string>
+    <string name="permissions_blocked_message">Android has blocked these permissions for RESQGO. Open Settings → Permissions and allow Location and Notifications, then come back.</string>
+    <string name="location_required_message">RESQGO needs Location to run crash monitoring in the background and to tell your contacts where you are. Android will not let the ride start without it.</string>
+    <string name="background_location_prompt">For crash detection while your screen is off, set Location to \"Allow all the time\" in Settings.</string>
+    <string name="ride_start_failed_title">Could not start monitoring</string>
+    <string name="ride_start_failed_message">Android refused to start the safety service (%1$s). Check that Location and Notifications are allowed for RESQGO.</string>
+    <string name="no_contact_title">No Emergency Contact</string>
+    <string name="no_contact_message">Please add an emergency contact before starting your ride. This ensures someone is notified if you have an accident.</string>
+    <string name="ride_anyway">Ride Anyway</string>
+    <string name="btn_return_to_ride">RETURN TO RIDE</string>
+    <string name="contacts_hint_empty">Tap Manage to add emergency contacts</string>
+    <string name="auto_sos_timer_info">Auto-SOS after %1$s</string>
+
+    <!-- Crash confirmation timer picker -->
+    <string name="timer_section_title">Crash Confirmation Timer</string>
+    <string name="timer_section_desc">How long RESQGO waits for you to tap “I’M OK” before it calls for help.</string>
+    <string name="timer_selected_summary">Waiting %1$s before Auto-SOS</string>
+    <string name="timer_shorter">Shorter</string>
+    <string name="timer_longer">Longer</string>
+    <string name="timer_saved">Timer set to %1$s</string>
+
+    <!-- Navigation screen -->
+    <string name="nav_your_location">Your Location</string>
+    <string name="nav_destination_hint">Where to? Paste a location link</string>
+    <string name="nav_route_shortest">Shortest</string>
+    <string name="nav_route_toll_free">Toll-Free</string>
+    <string name="nav_route_low_traffic">Low Traffic</string>
+    <string name="nav_route_better">Better Route</string>
+    <string name="nav_start_ride">Start Ride</string>
+    <string name="nav_navigating">Navigating</string>
+    <string name="nav_speed_label">CURRENT SPEED</string>
+    <string name="nav_diagnostics_hint">Sensor Diagnostics</string>
+    <string name="nav_maps_key_missing">Map unavailable. Check the Google Maps API key: enable “Maps SDK for Android” and allow this app’s package and signing certificate.</string>
+    <string name="nav_search_empty">Enter a destination name or coordinates</string>
+    <string name="nav_not_found">Could not find location for: %1$s</string>
+    <string name="nav_waiting_gps">Waiting for GPS location…</string>
+    <string name="nav_menu">Menu</string>
+    <string name="nav_recenter">Re-center on bike</string>
+    <string name="nav_no_destination">Set a destination</string>
+    <string name="nav_no_destination_hint">Search above, or share a location to RESQGO</string>
+    <string name="nav_location_off">Location off — tap to enable</string>
+    <string name="status_sensors_only">Sensors only — no GPS</string>
+    <string name="eta_minutes">%1$d min</string>
+    <string name="eta_summary">%1$d min (%2$.1f km)</string>
+    <string name="eta_via">Via %1$s • %2$s</string>
+
+    <!-- Bottom navigation -->
+    <string name="tab_home">Home</string>
+    <string name="tab_ride">Ride</string>
+    <string name="tab_safety">Safety</string>
+    <string name="tab_profile">Profile</string>
+
+    <!-- Splash -->
+    <string name="splash_headline">Safer Rides\nBrighter Tomorrows</string>
+    <string name="splash_cta">Get Started</string>
+    <string name="init_starting">Starting RESQGO…</string>
+    <string name="init_sensors">Checking motion sensors…</string>
+    <string name="init_gps">Preparing location services…</string>
+    <string name="init_model">Loading crash detection…</string>
+    <string name="init_settings">Loading your safety settings…</string>
+    <string name="init_maps">Preparing navigation…</string>
+    <string name="init_ready">Ready. Ride safe.</string>
+
+    <!-- Trip / Route Options (Change 10) -->
+    <string name="trip_options_title">Trip options</string>
+    <string name="trip_travel_mode">Travel mode</string>
+    <string name="trip_preferences">Route preferences</string>
+    <string name="trip_journey_actions">Journey</string>
+    <string name="trip_avoid_tolls">Avoid tolls</string>
+    <string name="trip_avoid_highways">Avoid highways</string>
+    <string name="trip_avoid_ferries">Avoid ferries</string>
+    <string name="trip_fuel_efficient">Prefer fuel-efficient routes</string>
+    <string name="trip_add_stop">＋  Add stop</string>
+    <string name="trip_share">Share</string>
+    <string name="trip_save">Save</string>
+    <string name="trip_apply_start">Start</string>
+    <string name="trip_no_stops">No stops added</string>
+    <string name="trip_stops_summary">%1$d stop(s): %2$s</string>
+    <string name="trip_options_desc">Trip options</string>
+    <string name="trip_add_stop_title">Add a stop</string>
+    <string name="trip_add_stop_hint">Place name or lat, lng</string>
+    <string name="trip_stop_added">Stop added — route updated</string>
+    <string name="trip_route_saved">Route saved</string>
+    <string name="trip_need_destination">Set a destination first</string>
+    <string name="trip_share_subject">My RESQGO route</string>
+    <string name="mode_two_wheeler">Bike</string>
+    <string name="mode_car">Car</string>
+    <string name="mode_transit">Transit</string>
+    <string name="mode_walking">Walk</string>
+    <string name="route_filtered_out">Hidden by your preferences</string>
+
+    <!-- Diagnostics -->
+    <string name="diagnostics_title">Diagnostics</string>
+    <string name="diagnostics_crash_found">RESQGO closed unexpectedly last time. Tap to view the report.</string>
+    <string name="diagnostics_none">No crashes recorded.</string>
+    <string name="diagnostics_clear">Clear report</string>
+    <string name="copy">Copy</string>
 </resources>

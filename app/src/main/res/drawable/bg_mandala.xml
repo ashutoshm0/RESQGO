@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Madhubani-inspired chakra motif used behind the RESQGO splash mark.
+     Colours are drawn from the brand palette so it works on cream and obsidian. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="260dp"
+    android:height="260dp"
+    android:viewportWidth="260"
+    android:viewportHeight="260">
+
+    <!-- Outer petal ring -->
+    <group android:name="petals">
+        <path
+            android:fillColor="#D2691E"
+            android:fillAlpha="0.18"
+            android:pathData="M130,4 a126,126 0 1,0 0.1,0 Z" />
+        <path
+            android:fillColor="#FAF5ED"
+            android:fillAlpha="0.0"
+            android:pathData="M130,20 a110,110 0 1,0 0.1,0 Z" />
+    </group>
+
+    <!-- Ray burst -->
+    <group android:pivotX="130" android:pivotY="130">
+        <path
+            android:fillColor="#D2691E"
+            android:fillAlpha="0.55"
+            android:pathData="M130,8 l9,26 l-18,0 Z" />
+    </group>
+    <group android:pivotX="130" android:pivotY="130" android:rotation="30">
+        <path android:fillColor="#B0873A" android:fillAlpha="0.5" android:pathData="M130,8 l9,26 l-18,0 Z" />
+    </group>
+    <group android:pivotX="130" android:pivotY="130" android:rotation="60">
+        <path android:fillColor="#D2691E" android:fillAlpha="0.55" android:pathData="M130,8 l9,26 l-18,0 Z" />
+    </group>
+    <group android:pivotX="130" android:pivotY="130" android:rotation="90">
+        <path android:fillColor="#B0873A" android:fillAlpha="0.5" android:pathData="M130,8 l9,26 l-18,0 Z" />
+    </group>
+    <group android:pivotX="130" android:pivotY="130" android:rotation="120">
+        <path android:fillColor="#D2691E" android:fillAlpha="0.55" android:pathData="M130,8 l9,26 l-18,0 Z" />
+    </group>
+    <group android:pivotX="130" android:pivotY="130" android:rotation="150">
+        <path android:fillColor="#B0873A" android:fillAlpha="0.5" android:pathData="M130,8 l9,26 l-18,0 Z" />
+    </group>
+    <group android:pivotX="130" android:pivotY="130" android:rotation="180">
+        <path android:fillColor="#D2691E" android:fillAlpha="0.55" android:pathData="M130,8 l9,26 l-18,0 Z" />
+    </group>
+    <group android:pivotX="130" android:pivotY="130" android:rotation="210">
+        <path android:fillColor="#B0873A" android:fillAlpha="0.5" android:pathData="M130,8 l9,26 l-18,0 Z" />
+    </group>
+    <group android:pivotX="130" android:pivotY="130" android:rotation="240">
+        <path android:fillColor="#D2691E" android:fillAlpha="0.55" android:pathData="M130,8 l9,26 l-18,0 Z" />
+    </group>
+    <group android:pivotX="130" android:pivotY="130" android:rotation="270">
+        <path android:fillColor="#B0873A" android:fillAlpha="0.5" android:pathData="M130,8 l9,26 l-18,0 Z" />
+    </group>
+    <group android:pivotX="130" android:pivotY="130" android:rotation="300">
+        <path android:fillColor="#D2691E" android:fillAlpha="0.55" android:pathData="M130,8 l9,26 l-18,0 Z" />
+    </group>
+    <group android:pivotX="130" android:pivotY="130" android:rotation="330">
+        <path android:fillColor="#B0873A" android:fillAlpha="0.5" android:pathData="M130,8 l9,26 l-18,0 Z" />
+    </group>
+
+    <!-- Concentric rings -->
+    <path
+        android:pathData="M130,44 a86,86 0 1,0 0.1,0 Z"
+        android:strokeColor="#D2691E"
+        android:strokeAlpha="0.7"
+        android:strokeWidth="3"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M130,62 a68,68 0 1,0 0.1,0 Z"
+        android:strokeColor="#B0873A"
+        android:strokeAlpha="0.55"
+        android:strokeWidth="2"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M130,80 a50,50 0 1,0 0.1,0 Z"
+        android:strokeColor="#D2691E"
+        android:strokeAlpha="0.35"
+        android:strokeWidth="8"
+        android:fillColor="#00000000" />
+</vector>

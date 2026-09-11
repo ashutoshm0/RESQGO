@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- LEGACY MAPPINGS (MAPPED TO DARK THEME) -->
+    <!-- Dark-mode overrides for the legacy colour aliases so views that
+         reference @color/resqgo_* directly stay readable at night. -->
     <color name="resqgo_primary">@color/md_theme_dark_primary</color>
-    <color name="resqgo_primary_dark">@color/md_theme_dark_primary</color>
-    <color name="resqgo_secondary">#5C6573</color>
+    <color name="resqgo_primary_dark">@color/md_theme_dark_secondary</color>
+    <color name="resqgo_secondary">#9AA3AF</color>
     <color name="resqgo_alert">@color/md_theme_dark_error</color>
     <color name="resqgo_alert_dark">#B04627</color>
-    <color name="resqgo_warning">#E5A910</color>
-    <color name="resqgo_success">#4E9B5D</color>
+    <color name="resqgo_warning">@color/md_theme_dark_primary</color>
+    <color name="resqgo_success">#4ADE80</color>
     <color name="resqgo_bg">@color/md_theme_dark_background</color>
     <color name="resqgo_surface">@color/md_theme_dark_surface</color>
     <color name="resqgo_surface2">@color/md_theme_dark_surfaceVariant</color>

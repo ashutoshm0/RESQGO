@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme. -->
+    <!-- Dark = "Palette 9 — Midnight Minimal" from the RESQGO design board. -->
     <style name="Theme.RESQGO" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
+        <item name="homeHeaderBackground">@drawable/bg_madhubani_header</item>
+
         <item name="colorPrimary">@color/md_theme_dark_primary</item>
         <item name="colorOnPrimary">@color/md_theme_dark_onPrimary</item>
-        <item name="colorPrimaryContainer">@color/md_theme_dark_primary</item>
-        <item name="colorOnPrimaryContainer">@color/md_theme_dark_onPrimary</item>
-        
+        <item name="colorPrimaryContainer">@color/md_theme_dark_surfaceVariant</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_dark_onBackground</item>
+
+        <item name="colorSecondary">@color/md_theme_dark_secondary</item>
+        <item name="colorOnSecondary">@color/md_theme_dark_onSecondary</item>
+
         <item name="colorError">@color/md_theme_dark_error</item>
         <item name="colorOnError">@color/md_theme_dark_onError</item>
-        
+        <item name="colorErrorContainer">#3B1513</item>
+        <item name="colorOnErrorContainer">#FFB4AB</item>
+
         <item name="android:colorBackground">@color/md_theme_dark_background</item>
         <item name="colorOnBackground">@color/md_theme_dark_onBackground</item>
-        
+
         <item name="colorSurface">@color/md_theme_dark_surface</item>
         <item name="colorOnSurface">@color/md_theme_dark_onSurface</item>
         <item name="colorSurfaceVariant">@color/md_theme_dark_surfaceVariant</item>
@@ -40,9 +46,9 @@
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:textColorPrimary">@color/white</item>
     </style>
-    
+
     <style name="Theme.RESQGO.Riding" parent="Theme.RESQGO">
         <item name="android:windowBackground">@color/md_theme_dark_background</item>
-        <item name="android:statusBarColor">@color/md_theme_dark_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 </resources>

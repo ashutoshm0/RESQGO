@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/resqgo_bg">
+    android:background="?android:attr/colorBackground">
 
     <LinearLayout
         android:id="@+id/toolbar"
@@ -21,7 +21,7 @@
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_revert"
-            app:tint="@color/resqgo_text_primary"
+            app:tint="?attr/colorOnBackground"
             android:contentDescription="Back" />
 
         <TextView
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:text="Ride History"
-            android:textColor="@color/resqgo_text_primary"
+            android:textColor="?attr/colorOnBackground"
             android:textSize="24sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -62,7 +62,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="No rides recorded yet"
-            android:textColor="@color/resqgo_text_primary"
+            android:textColor="?attr/colorOnBackground"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -72,7 +72,7 @@
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:text="Start your first ride from the home screen"
-            android:textColor="@color/resqgo_text_secondary"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="14sp" />
     </LinearLayout>
 

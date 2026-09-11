@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:clipToPadding="false"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/resqgo_bg"
+    android:background="?android:attr/colorBackground"
     android:fillViewport="true">
 
     <LinearLayout
@@ -18,7 +19,7 @@
             android:text="Emergency Contacts"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="@color/resqgo_text_primary"
+            android:textColor="?attr/colorOnBackground"
             android:layout_marginTop="32dp"/>
 
         <TextView
@@ -26,7 +27,7 @@
             android:layout_height="wrap_content"
             android:text="Up to 3 contacts will receive SOS alerts"
             android:textSize="14sp"
-            android:textColor="@color/resqgo_text_secondary"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="24dp"/>
 
@@ -37,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:visibility="gone"
-            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
             
@@ -66,7 +67,7 @@
                             android:text="Name"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/resqgo_text_primary"/>
+                            android:textColor="?attr/colorOnBackground"/>
                             
                         <TextView
                             android:id="@+id/tv_contact_1_phone"
@@ -74,7 +75,7 @@
                             android:layout_height="wrap_content"
                             android:text="Phone"
                             android:textSize="14sp"
-                            android:textColor="@color/resqgo_text_secondary"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginTop="2dp"/>
                             
                         <TextView
@@ -83,7 +84,7 @@
                             android:layout_height="wrap_content"
                             android:text="Relation"
                             android:textSize="12sp"
-                            android:textColor="@color/resqgo_primary"
+                            android:textColor="?attr/colorPrimary"
                             android:layout_marginTop="2dp"/>
                     </LinearLayout>
                     
@@ -118,8 +119,8 @@
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
                         android:text="Edit"
-                        android:backgroundTint="@color/resqgo_surface2"
-                        android:textColor="@color/resqgo_text_primary"
+                        android:backgroundTint="?attr/colorSurfaceVariant"
+                        android:textColor="?attr/colorOnBackground"
                         android:textSize="13sp"
                         app:cornerRadius="8dp"/>
                         
@@ -129,7 +130,7 @@
                         android:layout_height="40dp"
                         android:layout_weight="1"
                         android:text="Remove"
-                        android:backgroundTint="@color/resqgo_alert"
+                        android:backgroundTint="?attr/colorError"
                         android:textColor="@color/white"
                         android:textSize="13sp"
                         app:cornerRadius="8dp"/>
@@ -144,7 +145,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:visibility="gone"
-            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
             
@@ -173,7 +174,7 @@
                             android:text="Name"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/resqgo_text_primary"/>
+                            android:textColor="?attr/colorOnBackground"/>
                             
                         <TextView
                             android:id="@+id/tv_contact_2_phone"
@@ -181,7 +182,7 @@
                             android:layout_height="wrap_content"
                             android:text="Phone"
                             android:textSize="14sp"
-                            android:textColor="@color/resqgo_text_secondary"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginTop="2dp"/>
                             
                         <TextView
@@ -190,7 +191,7 @@
                             android:layout_height="wrap_content"
                             android:text="Relation"
                             android:textSize="12sp"
-                            android:textColor="@color/resqgo_primary"
+                            android:textColor="?attr/colorPrimary"
                             android:layout_marginTop="2dp"/>
                     </LinearLayout>
                     
@@ -225,8 +226,8 @@
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
                         android:text="Edit"
-                        android:backgroundTint="@color/resqgo_surface2"
-                        android:textColor="@color/resqgo_text_primary"
+                        android:backgroundTint="?attr/colorSurfaceVariant"
+                        android:textColor="?attr/colorOnBackground"
                         android:textSize="13sp"
                         app:cornerRadius="8dp"/>
                         
@@ -236,7 +237,7 @@
                         android:layout_height="40dp"
                         android:layout_weight="1"
                         android:text="Remove"
-                        android:backgroundTint="@color/resqgo_alert"
+                        android:backgroundTint="?attr/colorError"
                         android:textColor="@color/white"
                         android:textSize="13sp"
                         app:cornerRadius="8dp"/>
@@ -251,7 +252,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:visibility="gone"
-            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
             
@@ -280,7 +281,7 @@
                             android:text="Name"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/resqgo_text_primary"/>
+                            android:textColor="?attr/colorOnBackground"/>
                             
                         <TextView
                             android:id="@+id/tv_contact_3_phone"
@@ -288,7 +289,7 @@
                             android:layout_height="wrap_content"
                             android:text="Phone"
                             android:textSize="14sp"
-                            android:textColor="@color/resqgo_text_secondary"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:layout_marginTop="2dp"/>
                             
                         <TextView
@@ -297,7 +298,7 @@
                             android:layout_height="wrap_content"
                             android:text="Relation"
                             android:textSize="12sp"
-                            android:textColor="@color/resqgo_primary"
+                            android:textColor="?attr/colorPrimary"
                             android:layout_marginTop="2dp"/>
                     </LinearLayout>
                     
@@ -332,8 +333,8 @@
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
                         android:text="Edit"
-                        android:backgroundTint="@color/resqgo_surface2"
-                        android:textColor="@color/resqgo_text_primary"
+                        android:backgroundTint="?attr/colorSurfaceVariant"
+                        android:textColor="?attr/colorOnBackground"
                         android:textSize="13sp"
                         app:cornerRadius="8dp"/>
                         
@@ -343,7 +344,7 @@
                         android:layout_height="40dp"
                         android:layout_weight="1"
                         android:text="Remove"
-                        android:backgroundTint="@color/resqgo_alert"
+                        android:backgroundTint="?attr/colorError"
                         android:textColor="@color/white"
                         android:textSize="13sp"
                         app:cornerRadius="8dp"/>
@@ -359,7 +360,7 @@
             android:text="@string/add_contact"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:backgroundTint="@color/resqgo_primary"
+            android:backgroundTint="?attr/colorPrimary"
             android:textColor="@color/white"
             app:cornerRadius="12dp"/>
 

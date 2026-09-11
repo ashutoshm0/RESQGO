@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Trip / Route Options (Change 10): travel mode, avoid preferences and the
+     journey actions Add Stop / Share / Save. Opened from the three-dot button. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorSurface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="22dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="28dp">
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:background="?attr/colorOutline" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/trip_options_title"
+            android:textColor="?attr/colorOnBackground"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <!-- Travel modes -->
+        <TextView
+            style="@style/Widget.RESQGO.SectionLabel"
+            android:text="@string/trip_travel_mode" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:chipSpacingHorizontal="8dp"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipModeBike"
+                style="@style/Widget.RESQGO.TimerChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mode_two_wheeler" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipModeCar"
+                style="@style/Widget.RESQGO.TimerChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mode_car" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipModeTransit"
+                style="@style/Widget.RESQGO.TimerChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mode_transit" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipModeWalk"
+                style="@style/Widget.RESQGO.TimerChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mode_walking" />
+        </com.google.android.material.chip.ChipGroup>
+
+        <!-- Route preferences -->
+        <TextView
+            style="@style/Widget.RESQGO.SectionLabel"
+            android:text="@string/trip_preferences" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/swAvoidTolls"
+            style="@style/Widget.RESQGO.OptionSwitch"
+            android:text="@string/trip_avoid_tolls" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/swAvoidHighways"
+            style="@style/Widget.RESQGO.OptionSwitch"
+            android:text="@string/trip_avoid_highways" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/swAvoidFerries"
+            style="@style/Widget.RESQGO.OptionSwitch"
+            android:text="@string/trip_avoid_ferries" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/swFuelEfficient"
+            style="@style/Widget.RESQGO.OptionSwitch"
+            android:text="@string/trip_fuel_efficient" />
+
+        <!-- Journey actions -->
+        <TextView
+            style="@style/Widget.RESQGO.SectionLabel"
+            android:text="@string/trip_journey_actions" />
+
+        <TextView
+            android:id="@+id/tvStopsSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/trip_no_stops"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="13sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAddStop"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="10dp"
+            android:text="@string/trip_add_stop"
+            android:textColor="?attr/colorOnBackground"
+            app:cornerRadius="14dp"
+            app:strokeColor="?attr/colorOutline" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnShareRoute"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_marginEnd="5dp"
+                android:layout_weight="1"
+                android:text="@string/trip_share"
+                android:textColor="?attr/colorOnBackground"
+                app:cornerRadius="14dp"
+                app:strokeColor="?attr/colorOutline" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSaveRoute"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1"
+                android:text="@string/trip_save"
+                android:textColor="?attr/colorOnBackground"
+                app:cornerRadius="14dp"
+                app:strokeColor="?attr/colorOutline" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnApplyAndStart"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/trip_apply_start"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="?attr/colorPrimary"
+            app:cornerRadius="14dp" />
+    </LinearLayout>
+</ScrollView>

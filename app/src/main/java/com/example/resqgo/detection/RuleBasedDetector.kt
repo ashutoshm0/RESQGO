@@ -33,20 +33,30 @@ class RuleBasedDetector(private val impactThreshold: Float = DetectionThresholds
                     currentState = State.BUFFERING
                     impactTimestamp = currentTime
                     accelBuffer.clear()
-                    accelBuffer.add(gForce)
+                    // NB: the impact sample is deliberately NOT buffered. A 40-70 m/s²
+                    // spike sitting in the buffer dominates the variance and makes the
+                    // stillness test unpassable — the harder the crash, the surer the miss.
                 }
             }
             State.BUFFERING -> {
-                accelBuffer.add(gForce)
-                
                 val timeSinceImpact = currentTime - impactTimestamp
+
+                // Only sample once the crash dynamics have settled.
+                if (timeSinceImpact >= DetectionThresholds.SETTLE_DELAY_MS) {
+                    accelBuffer.add(gForce)
+                }
+
                 if (timeSinceImpact > DetectionThresholds.STILLNESS_BUFFER_DURATION_MS) {
                     // Time to evaluate the buffer!
                     val variance = calculateVariance(accelBuffer)
                     val currentSpeed = speedMps ?: 0f
                     
-                    // Stage 3: Statistical Evaluation
-                    val isStill = variance < DetectionThresholds.STILLNESS_G_FORCE_VARIANCE
+                    // Stage 3: Statistical Evaluation.
+                    // An empty/short buffer means we never got readings in the settle
+                    // window — treat that as inconclusive rather than as stillness,
+                    // otherwise a sensor stall reads as a crash.
+                    val haveEnough = accelBuffer.size >= DetectionThresholds.MIN_STILLNESS_SAMPLES
+                    val isStill = haveEnough && variance < DetectionThresholds.STILLNESS_G_FORCE_VARIANCE
                     val isStopped = currentSpeed <= DetectionThresholds.MAX_POST_CRASH_SPEED_MPS
                     
                     val result = if (isStill && isStopped) {

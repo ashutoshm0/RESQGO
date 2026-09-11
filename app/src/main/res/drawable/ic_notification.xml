@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification small icon: MUST be a flat white silhouette on transparent,
+     otherwise Android renders it as a grey blob in the status bar. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#FFFFFF">
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,2L4,5.5v6.1c0,4.9 3.4,9.5 8,10.6c4.6,-1.1 8,-5.7 8,-10.6V5.5L12,2z M13.2,16.4h-2.4v-3.2H7.6v-2.4h3.2V7.6h2.4v3.2h3.2v2.4h-3.2V16.4z" />
+</vector>

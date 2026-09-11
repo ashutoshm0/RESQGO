@@ -1,6 +1,7 @@
 package com.example.resqgo.ui.contacts
 
 import android.os.Bundle
+import com.example.resqgo.util.applySystemBarPadding
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
@@ -22,6 +23,7 @@ class EmergencyContactsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityEmergencyContactsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.applySystemBarPadding(top = true, bottom = true)
         prefs = UserPreferences(this)
 
         binding.btnAddContact.setOnClickListener {

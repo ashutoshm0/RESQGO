@@ -1,8 +1,17 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.google.services)
 }
+
+// Secrets live in local.properties (gitignored), never in source.
+// The map itself needs no key — it uses osmdroid with Esri tiles.
+val fast2smsKey: String = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}.getProperty("FAST2SMS_API_KEY", "")
 
 android {
     namespace = "com.example.resqgo"
@@ -16,6 +25,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Fast2SMS credential is injected from local.properties so it never
+        // lands in source control. Empty key simply disables that SOS layer.
+        buildConfigField("String", "FAST2SMS_API_KEY", "\"" + fast2smsKey + "\"")
     }
 
     buildTypes {
@@ -33,6 +46,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -60,11 +74,13 @@ dependencies {
     
     // Play Services Location & Maps
     implementation(libs.play.services.location)
-    implementation(libs.play.services.maps)
     implementation(libs.okhttp)
     
     // WorkManager
     implementation(libs.workmanager.ktx)
+
+    // OpenStreetMap map view — no API key, no billing
+    implementation(libs.osmdroid.android)
 
     // Firebase (BOM)
     implementation(platform(libs.firebase.bom))

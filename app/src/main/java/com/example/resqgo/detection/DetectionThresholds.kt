@@ -29,6 +29,17 @@ object DetectionThresholds {
     
     // Stillness evaluation after impact
     const val STILLNESS_BUFFER_DURATION_MS = 3500L    // 3.5 seconds
+
+    /**
+     * How long after the impact to ignore before sampling for stillness.
+     * The impact spike itself and the slide/tumble that follows are violent;
+     * including them makes the variance test impossible to pass. We only
+     * measure the tail of the window, when a downed bike has come to rest.
+     */
+    const val SETTLE_DELAY_MS = 1500L                 // 1.5 seconds
+
+    /** Minimum readings needed in the settle window for the variance test to mean anything. */
+    const val MIN_STILLNESS_SAMPLES = 5
     const val STILLNESS_G_FORCE_VARIANCE = 0.8f       // Variance must be low (phone is lying still)
     const val MAX_POST_CRASH_SPEED_MPS = 1.0f         // Max 3.6 km/h post-crash
 

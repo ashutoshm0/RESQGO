@@ -1,22 +1,23 @@
 package com.example.resqgo.ui.riding
 
-import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.appcompat.app.AlertDialog
@@ -26,114 +27,140 @@ import com.example.resqgo.R
 import com.example.resqgo.data.local.UserPreferences
 import com.example.resqgo.databinding.ActivityRidingBinding
 import com.example.resqgo.location.LocationTracker
+import com.example.resqgo.navigation.RouteFlavour
+import com.example.resqgo.navigation.RoutePreferences
 import com.example.resqgo.service.RideMonitoringService
 import com.example.resqgo.sos.SOSManager
+import com.example.resqgo.ui.contacts.EmergencyContactsActivity
 import com.example.resqgo.ui.home.HomeActivity
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.Polyline
-import com.google.android.gms.maps.model.PolylineOptions
+import com.example.resqgo.ui.settings.SettingsActivity
+import com.example.resqgo.util.PermissionHelper
+import com.example.resqgo.util.applySystemBarPadding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.tileprovider.tilesource.XYTileSource
+import org.osmdroid.util.BoundingBox
+import org.osmdroid.util.MapTileIndex
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.CustomZoomButtonsController
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polyline
 import java.util.Locale
 import java.util.regex.Pattern
 import kotlin.math.roundToInt
 
-class RidingActivity : AppCompatActivity(), OnMapReadyCallback {
+private const val TAG = "RidingActivity"
+
+/**
+ * Navigation + active-ride screen.
+ *
+ * Rendered with osmdroid (OpenStreetMap) rather than the Google Maps SDK: it
+ * needs no API key and no billing account, and it caches tiles to disk, which
+ * suits an app built for patchy-network riding.
+ */
+class RidingActivity : AppCompatActivity(), TripOptionsSheet.Listener {
+
+    companion object {
+        /** Set false for a safety-only ride: monitoring runs, no destination asked for. */
+        const val EXTRA_ASK_DESTINATION = "ask_destination"
+    }
 
     private lateinit var binding: ActivityRidingBinding
     private lateinit var prefs: UserPreferences
     private lateinit var sosManager: SOSManager
     private lateinit var locationTracker: LocationTracker
+    private var diagnosticsSheet: BottomSheetBehavior<*>? = null
 
-    private var mMap: GoogleMap? = null
     private var bikeMarker: Marker? = null
     private var destinationMarker: Marker? = null
+    private val stopMarkers = mutableListOf<Marker>()
     private var activeRoutePolyline: Polyline? = null
     private val alternativePolylines = mutableListOf<Polyline>()
 
-    private var currentRiderLatLng: LatLng? = null
-    private var currentDestinationLatLng: LatLng? = null
+    private var currentRiderLatLng: GeoPoint? = null
+    private var currentDestinationLatLng: GeoPoint? = null
+    private var destinationLabel: String = ""
     private var isNavigating = false
     private var lastBearing = 0f
+    private var topoView = false
+
+    private var selectedRoute = RouteFlavour.RECOMMENDED
+    private var routePrefs = RoutePreferences()
+
+    /** Intermediate stops added via Trip Options, in visiting order. */
+    private val stops = mutableListOf<Pair<String, GeoPoint>>()
+
+    private val routeCards: Map<RouteFlavour, Pair<MaterialCardView, TextView>> by lazy {
+        mapOf(
+            RouteFlavour.SHORTEST to (binding.cardRouteShortest to binding.tvTimeShortest),
+            RouteFlavour.TOLL_FREE to (binding.cardRouteTollFree to binding.tvTimeTollFree),
+            RouteFlavour.LOW_TRAFFIC to (binding.cardRouteLowTraffic to binding.tvTimeLowTraffic),
+            RouteFlavour.RECOMMENDED to (binding.cardRouteBetter to binding.tvTimeBetter)
+        )
+    }
 
     // Sensor broadcast receiver from background RideMonitoringService
     private val sensorReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action != HomeActivity.ACTION_SENSOR_UPDATE) return
 
-            val gForce   = intent.getFloatExtra("gForce", 9.8f)
+            val gForce = intent.getFloatExtra("gForce", 9.8f)
             val speedKmh = intent.getFloatExtra("speedKmh", -1f)
-            val gx       = intent.getFloatExtra("gx", 0f)
-            val gy       = intent.getFloatExtra("gy", 0f)
+            val gx = intent.getFloatExtra("gx", 0f)
+            val gy = intent.getFloatExtra("gy", 0f)
             val gpsLocked = intent.getBooleanExtra("gpsLocked", false)
 
-            // Update diagnostics
             binding.tvDiagGForce.text = String.format(Locale.US, "%.2f G", gForce / 9.80665f)
             binding.tvDiagGyroX.text = String.format(Locale.US, "%.2f rad/s", gx)
             binding.tvDiagGyroY.text = String.format(Locale.US, "%.2f rad/s", gy)
             binding.tvDiagGps.text = if (gpsLocked) "Locked (3D)" else "Searching..."
             binding.tvDiagGps.setTextColor(
-                ContextCompat.getColor(this@RidingActivity, if (gpsLocked) R.color.resqgo_success else R.color.resqgo_alert)
+                ContextCompat.getColor(
+                    this@RidingActivity,
+                    if (gpsLocked) R.color.resqgo_success else R.color.resqgo_alert
+                )
             )
 
-            // Speedometer update
             if (speedKmh >= 0) {
                 binding.tvSpeed.text = String.format(Locale.US, "%d km/h", speedKmh.roundToInt())
             }
 
-            // Also check latest GPS coordinates from locationTracker
-            val loc = locationTracker.getLastLocation()
-            if (loc != null) {
-                onLocationChanged(loc)
-            }
+            locationTracker.getLastLocation()?.let { onLocationChanged(it) }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityRidingBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.topBarContainer.applySystemBarPadding(top = true)
+        binding.bottomContainer.applySystemBarPadding(bottom = true)
 
         prefs = UserPreferences(this)
+        routePrefs = prefs.routePreferences
         sosManager = SOSManager(this)
         locationTracker = LocationTracker(this)
 
-        onBackPressedDispatcher.addCallback(this) {
-            confirmEndRide()
-        }
+        onBackPressedDispatcher.addCallback(this) { confirmEndRide() }
 
+        setupMap()
         setupUI()
-        setupDiagnosticsDrawer()
-
-        // Initialize Google Map
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-
-        // Ensure background monitoring service is running
-        if (!prefs.isRidingOnline) {
-            prefs.isRidingOnline = true
-            val serviceIntent = Intent(this, RideMonitoringService::class.java).apply {
-                action = RideMonitoringService.ACTION_START
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(serviceIntent)
-            } else {
-                startService(serviceIntent)
-            }
+        if (intent.getBooleanExtra(EXTRA_ASK_DESTINATION, false)) {
+            binding.etDestination.requestFocus()
         }
+        setupDiagnosticsDrawer()
+        setupBottomNav()
+
+        if (!prefs.isRidingOnline) startMonitoringService()
+
+        handleIncomingLocationIntent(intent)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -142,72 +169,122 @@ class RidingActivity : AppCompatActivity(), OnMapReadyCallback {
         handleIncomingLocationIntent(intent)
     }
 
-    private fun setupUI() {
-        // Display selected Crash Confirmation Timer
-        binding.tvSosTimerDisplay.text = "SOS Countdown: ${prefs.sosTimerSeconds}s"
+    // ── Map ──────────────────────────────────────────────────────────────────
 
-        // Search input handling
+    /**
+     * Esri's World Street Map: free, needs no API key and — unlike
+     * OpenStreetMap's volunteer servers — permits ordinary app traffic.
+     * OSM's own tiles return 403 "Access blocked" for apps like this one.
+     * Esri serves tiles as /{z}/{y}/{x} with no extension, hence the override.
+     */
+    private val esriStreets = object : OnlineTileSourceBase(
+        "EsriWorldStreetMap", 0, 19, 256, "",
+        arrayOf("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/"),
+        "Esri, HERE, Garmin, © OpenStreetMap contributors"
+    ) {
+        override fun getTileURLString(pMapTileIndex: Long): String =
+            baseUrl + MapTileIndex.getZoom(pMapTileIndex) +
+                "/" + MapTileIndex.getY(pMapTileIndex) +
+                "/" + MapTileIndex.getX(pMapTileIndex)
+    }
+
+    /** Satellite imagery for the layers toggle — also key-free. */
+    private val esriImagery = object : OnlineTileSourceBase(
+        "EsriWorldImagery", 0, 19, 256, "",
+        arrayOf("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"),
+        "Esri, Maxar, Earthstar Geographics"
+    ) {
+        override fun getTileURLString(pMapTileIndex: Long): String =
+            baseUrl + MapTileIndex.getZoom(pMapTileIndex) +
+                "/" + MapTileIndex.getY(pMapTileIndex) +
+                "/" + MapTileIndex.getX(pMapTileIndex)
+    }
+
+    private fun setupMap() {
+        binding.mapView.apply {
+            setTileSource(esriStreets)
+            setMultiTouchControls(true)
+            setUseDataConnection(true)
+            zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
+        }
+        binding.tvMapUnavailable.visibility = View.GONE
+
+        val initial = locationTracker.getLastLocation()
+        val start = if (initial != null) {
+            GeoPoint(initial.latitude, initial.longitude)
+        } else {
+            GeoPoint(20.5937, 78.9629) // India
+        }
+        binding.mapView.controller.setZoom(if (initial != null) 16.0 else 5.0)
+        binding.mapView.controller.setCenter(start)
+        if (initial != null) updateRiderPosition(start, initial.bearing)
+    }
+
+    private fun startMonitoringService() {
+        prefs.isRidingOnline = true
+        val serviceIntent = Intent(this, RideMonitoringService::class.java).apply {
+            action = RideMonitoringService.ACTION_START
+        }
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
+        } catch (e: Exception) {
+            prefs.isRidingOnline = false
+            binding.tvMonitoringStatus.text = getString(R.string.ride_start_failed_title)
+            binding.tvMonitoringStatus.setTextColor(
+                ContextCompat.getColor(this, R.color.resqgo_alert)
+            )
+        }
+    }
+
+    private fun setupUI() {
+        binding.tvSosTimerDisplay.text =
+            getString(R.string.auto_sos_timer_info, formatTimer(prefs.sosTimerSeconds))
+        binding.tvRouteDistanceTime.text = getString(R.string.nav_no_destination)
+        binding.tvRouteVia.text = getString(R.string.nav_no_destination_hint)
+
+        binding.tvCurrentLocation.setOnClickListener {
+            if (!PermissionHelper.hasLocation(this)) PermissionHelper.openAppSettings(this)
+        }
+
         binding.etDestination.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
-                hideKeyboard()
-                val query = binding.etDestination.text.toString().trim()
-                if (query.isNotEmpty()) {
-                    searchAndPlotDestination(query)
-                }
+                submitDestination()
                 true
             } else {
                 false
             }
         }
+        binding.btnSearchDestination.setOnClickListener { submitDestination() }
+        binding.btnTripOptions.setOnClickListener { openTripOptions() }
+        binding.btnMenu.setOnClickListener { startActivity(Intent(this, HomeActivity::class.java)) }
 
-        binding.btnSearchDestination.setOnClickListener {
-            hideKeyboard()
-            val query = binding.etDestination.text.toString().trim()
-            if (query.isNotEmpty()) {
-                searchAndPlotDestination(query)
-            } else {
-                Toast.makeText(this, "Enter a destination name or coordinates", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        // Re-center on bike
         binding.fabRecenter.setOnClickListener {
-            currentRiderLatLng?.let { latLng ->
-                mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17f))
-            } ?: Toast.makeText(this, "Waiting for GPS location...", Toast.LENGTH_SHORT).show()
+            currentRiderLatLng?.let {
+                binding.mapView.controller.animateTo(it, 17.0, 600L)
+            } ?: Toast.makeText(this, R.string.nav_waiting_gps, Toast.LENGTH_SHORT).show()
         }
 
-        // Navigation mode start
-        binding.btnStartNavigation.setOnClickListener {
-            isNavigating = !isNavigating
-            if (isNavigating) {
-                binding.btnStartNavigation.text = "Navigating"
-                binding.btnStartNavigation.setBackgroundColor(ContextCompat.getColor(this, R.color.resqgo_success))
-                currentRiderLatLng?.let { riderLoc ->
-                    val camPos = CameraPosition.builder()
-                        .target(riderLoc)
-                        .zoom(18f)
-                        .bearing(lastBearing)
-                        .tilt(45f)
-                        .build()
-                    mMap?.animateCamera(CameraUpdateFactory.newCameraPosition(camPos))
-                }
-                Toast.makeText(this, "Navigation active • Live tracking enabled", Toast.LENGTH_SHORT).show()
-            } else {
-                binding.btnStartNavigation.text = "Start Nav"
-                binding.btnStartNavigation.setBackgroundColor(ContextCompat.getColor(this, R.color.resqgo_primary))
-                currentRiderLatLng?.let { riderLoc ->
-                    mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(riderLoc, 15f))
-                }
-            }
+        // Layers button toggles street map <-> satellite imagery.
+        binding.fabMapType.setOnClickListener {
+            topoView = !topoView
+            binding.mapView.setTileSource(
+                if (topoView) esriImagery else esriStreets
+            )
         }
 
-        // Route choices chip group
-        binding.chipGroupRoutes.setOnCheckedChangeListener { _, checkedId ->
-            onRouteOptionSelected(checkedId)
+        binding.tvMonitoringStatus.setOnClickListener {
+            diagnosticsSheet?.state = BottomSheetBehavior.STATE_EXPANDED
         }
 
-        // SOS panic button
+        routeCards.forEach { (option, views) ->
+            views.first.setOnClickListener { selectRoute(option) }
+        }
+        binding.btnStartNavigation.setOnClickListener { toggleNavigation() }
+
         binding.btnSosPanic.setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle(R.string.sos_confirm_title)
@@ -218,359 +295,513 @@ class RidingActivity : AppCompatActivity(), OnMapReadyCallback {
                 .setNegativeButton(R.string.cancel, null)
                 .show()
         }
+        binding.btnEndRide.setOnClickListener { confirmEndRide() }
+    }
 
-        // End ride button
-        binding.btnEndRide.setOnClickListener {
-            confirmEndRide()
+    /** The safety banner must tell the truth about what is actually monitored. */
+    private fun updateMonitoringStatus() {
+        if (PermissionHelper.hasLocation(this)) {
+            binding.tvMonitoringStatus.text = getString(R.string.status_monitoring)
+            binding.tvMonitoringStatus.setTextColor(
+                ContextCompat.getColor(this, R.color.resqgo_success)
+            )
+        } else {
+            binding.tvMonitoringStatus.text = getString(R.string.status_sensors_only)
+            binding.tvMonitoringStatus.setTextColor(
+                ContextCompat.getColor(this, R.color.resqgo_alert)
+            )
+            binding.tvCurrentLocation.text = getString(R.string.nav_location_off)
+        }
+    }
+
+    // ── Trip / Route Options (Change 10) ─────────────────────────────────────
+
+    private fun openTripOptions() {
+        val sheet = TripOptionsSheet()
+        sheet.listener = this
+        sheet.setInitialState(routePrefs, stopsSummary())
+        sheet.show(supportFragmentManager, "trip_options")
+    }
+
+    private fun stopsSummary(): String? =
+        if (stops.isEmpty()) null
+        else getString(R.string.trip_stops_summary, stops.size, stops.joinToString(", ") { it.first })
+
+    override fun onPreferencesChanged(prefs: RoutePreferences) {
+        routePrefs = prefs
+        this.prefs.routePreferences = prefs
+        // Routes recalculate immediately, as the spec requires.
+        if (currentDestinationLatLng != null) {
+            refreshRouteEtas()
+            selectRoute(if (routePrefs.permits(selectedRoute)) selectedRoute else RouteFlavour.SHORTEST)
+            currentRiderLatLng?.let { rider ->
+                currentDestinationLatLng?.let { dest -> renderRoutePolylines(rider, dest) }
+            }
+        }
+    }
+
+    override fun onAddStopRequested() {
+        if (currentDestinationLatLng == null) {
+            Toast.makeText(this, R.string.trip_need_destination, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val input = EditText(this).apply {
+            hint = getString(R.string.trip_add_stop_hint)
+            setPadding(48, 32, 48, 32)
+        }
+        AlertDialog.Builder(this)
+            .setTitle(R.string.trip_add_stop_title)
+            .setView(input)
+            .setPositiveButton(R.string.trip_add_stop) { _, _ ->
+                val query = input.text.toString().trim()
+                if (query.isEmpty()) return@setPositiveButton
+                CoroutineScope(Dispatchers.IO).launch {
+                    val point = resolveQueryToGeoPoint(query)
+                    withContext(Dispatchers.Main) {
+                        if (point == null) {
+                            Toast.makeText(
+                                this@RidingActivity,
+                                getString(R.string.nav_not_found, query),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        } else {
+                            stops.add(query to point)
+                            addPlainMarker(point, query)
+                            refreshRouteEtas()
+                            selectRoute(selectedRoute)
+                            currentRiderLatLng?.let { r ->
+                                currentDestinationLatLng?.let { d -> renderRoutePolylines(r, d) }
+                            }
+                            Toast.makeText(
+                                this@RidingActivity,
+                                R.string.trip_stop_added,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    override fun onShareRouteRequested() {
+        val dest = currentDestinationLatLng
+        if (dest == null) {
+            Toast.makeText(this, R.string.trip_need_destination, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val nl = System.lineSeparator()
+        val body = buildString {
+            append("RESQGO route to ").append(destinationLabel.ifBlank { "my destination" }).append(nl)
+            append("https://www.openstreetmap.org/?mlat=")
+                .append(dest.latitude).append("&mlon=").append(dest.longitude).append(nl)
+            append(getString(selectedRoute.labelRes)).append(" • ")
+            append(getString(R.string.eta_summary, etaMinutes(selectedRoute), routeKm(selectedRoute)))
+            if (stops.isNotEmpty()) {
+                append(nl).append("Via: ").append(stops.joinToString(", ") { it.first })
+            }
+        }
+        val send = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, getString(R.string.trip_share_subject))
+            putExtra(Intent.EXTRA_TEXT, body)
+        }
+        startActivity(Intent.createChooser(send, getString(R.string.trip_share)))
+    }
+
+    override fun onSaveRouteRequested() {
+        val dest = currentDestinationLatLng
+        if (dest == null) {
+            Toast.makeText(this, R.string.trip_need_destination, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val label = destinationLabel.ifBlank { "Destination" }
+        prefs.saveRoute(label + "|" + dest.latitude + "|" + dest.longitude)
+        Toast.makeText(this, R.string.trip_route_saved, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onStartRequested() {
+        if (!isNavigating) toggleNavigation()
+    }
+
+    private fun setupBottomNav() {
+        binding.bottomNav.selectedItemId = R.id.navRide
+        binding.bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.navHome -> {
+                    startActivity(Intent(this, HomeActivity::class.java)); true
+                }
+                R.id.navSafety -> {
+                    startActivity(Intent(this, EmergencyContactsActivity::class.java)); true
+                }
+                R.id.navProfile -> {
+                    startActivity(Intent(this, SettingsActivity::class.java)); true
+                }
+                R.id.navRide -> true
+                else -> false
+            }
         }
     }
 
     private fun setupDiagnosticsDrawer() {
-        val bottomSheet = BottomSheetBehavior.from(binding.bottomSheetDiagnostics)
-        bottomSheet.peekHeight = 130
-        bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
-    }
-
-    override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
-
-        try {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                mMap?.isMyLocationEnabled = false // using custom bike marker for two-wheeler UX
-            }
-        } catch (_: SecurityException) {}
-
-        mMap?.uiSettings?.isCompassEnabled = true
-        mMap?.uiSettings?.isMapToolbarEnabled = true
-
-        // Default initial point
-        val initialLoc = locationTracker.getLastLocation()
-        if (initialLoc != null) {
-            val latLng = LatLng(initialLoc.latitude, initialLoc.longitude)
-            updateRiderPosition(latLng, initialLoc.bearing)
-            mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
-        } else {
-            // Default center on India
-            val indiaCenter = LatLng(20.5937, 78.9629)
-            mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(indiaCenter, 5f))
+        diagnosticsSheet = BottomSheetBehavior.from(binding.bottomSheetDiagnostics).apply {
+            isHideable = true
+            peekHeight = 0
+            state = BottomSheetBehavior.STATE_HIDDEN
         }
-
-        // Process any incoming deep link or shared location intent
-        handleIncomingLocationIntent(intent)
     }
 
-    /**
-     * Change 5 — Shared Location to Direct Navigation
-     * Parses incoming intent from WhatsApp, Google Maps shared links, or geo: URIs
-     */
+    private fun submitDestination() {
+        hideKeyboard()
+        val query = binding.etDestination.text.toString().trim()
+        if (query.isNotEmpty()) {
+            searchAndPlotDestination(query)
+        } else {
+            Toast.makeText(this, R.string.nav_search_empty, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun toggleNavigation() {
+        if (currentDestinationLatLng == null) {
+            Toast.makeText(this, R.string.nav_search_empty, Toast.LENGTH_SHORT).show()
+            return
+        }
+        isNavigating = !isNavigating
+        binding.btnStartNavigation.text =
+            getString(if (isNavigating) R.string.nav_navigating else R.string.nav_start_ride)
+        currentRiderLatLng?.let {
+            binding.mapView.controller.animateTo(it, if (isNavigating) 18.0 else 15.0, 600L)
+        }
+    }
+
+    /** Change 5 — Shared Location to Direct Navigation. */
     private fun handleIncomingLocationIntent(intent: Intent?) {
         if (intent == null) return
-
         val action = intent.action
         val data = intent.data
-
         var targetQuery: String? = null
 
-        if (Intent.ACTION_VIEW == action && data != null) {
-            val scheme = data.scheme
-            if (scheme == "geo") {
-                // geo:12.9716,77.5946?q=... or geo:0,0?q=destination
-                val qParam = data.getQueryParameter("q")
-                if (!qParam.isNullOrBlank()) {
-                    targetQuery = qParam
-                } else {
-                    targetQuery = data.schemeSpecificPart.substringBefore('?')
+        try {
+            if (Intent.ACTION_VIEW == action && data != null) {
+                when (data.scheme) {
+                    // "geo:" is an OPAQUE uri — Uri.getQueryParameter() throws on it.
+                    "geo" -> {
+                        val ssp = data.schemeSpecificPart.orEmpty()
+                        val q = ssp.substringAfter("q=", "").substringBefore('&')
+                        targetQuery = if (q.isNotBlank()) {
+                            Uri.decode(q.replace("+", " "))
+                        } else {
+                            ssp.substringBefore('?')
+                        }
+                    }
+                    "http", "https" -> {
+                        targetQuery = if (data.isHierarchical) {
+                            data.getQueryParameter("q")
+                                ?: data.getQueryParameter("daddr")
+                                ?: data.toString()
+                        } else {
+                            data.toString()
+                        }
+                    }
                 }
-            } else if (scheme == "http" || scheme == "https") {
-                // https://maps.google.com/?q=... or https://maps.app.goo.gl/...
-                val qParam = data.getQueryParameter("q")
-                val daddr = data.getQueryParameter("daddr")
-                targetQuery = qParam ?: daddr ?: data.toString()
+            } else if (Intent.ACTION_SEND == action) {
+                intent.getStringExtra(Intent.EXTRA_TEXT)?.takeIf { it.isNotBlank() }?.let {
+                    targetQuery = extractLocationFromText(it)
+                }
             }
-        } else if (Intent.ACTION_SEND == action) {
-            // Shared text from WhatsApp, Telegram, etc.
-            val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
-            if (!sharedText.isNullOrBlank()) {
-                targetQuery = extractLocationFromText(sharedText)
-            }
+        } catch (e: Exception) {
+            // A malformed share must never take the safety app down.
+            Log.w(TAG, "Could not parse shared location", e)
+            return
         }
 
-        if (!targetQuery.isNullOrBlank()) {
-            binding.etDestination.setText(targetQuery)
-            searchAndPlotDestination(targetQuery)
-            Toast.makeText(this, "Shared location received: $targetQuery", Toast.LENGTH_SHORT).show()
+        targetQuery?.takeIf { it.isNotBlank() }?.let { query ->
+            binding.etDestination.setText(query)
+            searchAndPlotDestination(query)
         }
     }
 
-    /**
-     * Extracts coordinates or URLs from raw shared message text (e.g. from WhatsApp)
-     */
     private fun extractLocationFromText(text: String): String {
-        // Check for coordinates pattern like "12.9716, 77.5946"
-        val coordPattern = Pattern.compile("(-?\\d{1,2}\\.\\d+)[,\\s]+(-?\\d{1,3}\\.\\d+)")
-        val matcher = coordPattern.matcher(text)
-        if (matcher.find()) {
-            return "${matcher.group(1)},${matcher.group(2)}"
-        }
-
-        // Check for google maps url
-        val urlPattern = Pattern.compile("(https?://\\S+)")
-        val urlMatcher = urlPattern.matcher(text)
-        if (urlMatcher.find()) {
-            return urlMatcher.group(1) ?: text
-        }
-
+        val coord = Pattern.compile("(-?\\d{1,2}\\.\\d+)[,\\s]+(-?\\d{1,3}\\.\\d+)").matcher(text)
+        if (coord.find()) return coord.group(1) + "," + coord.group(2)
+        val url = Pattern.compile("(https?://\\S+)").matcher(text)
+        if (url.find()) return url.group(1) ?: text
         return text
     }
 
-    /**
-     * Resolves destination query into LatLng and renders routes
-     */
     private fun searchAndPlotDestination(query: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val destination = resolveQueryToLatLng(query)
-
+            val destination = resolveQueryToGeoPoint(query)
             withContext(Dispatchers.Main) {
                 if (destination != null) {
                     currentDestinationLatLng = destination
+                    destinationLabel = query
                     displayDestinationAndRoutes(destination, query)
                 } else {
-                    Toast.makeText(this@RidingActivity, "Could not find location for: $query", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        this@RidingActivity,
+                        getString(R.string.nav_not_found, query),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }
     }
 
-    private fun resolveQueryToLatLng(query: String): LatLng? {
+    /** Uses Android's built-in Geocoder — no Maps API key involved. */
+    private fun resolveQueryToGeoPoint(query: String): GeoPoint? {
         // 1. Try parsing directly as "lat, lng"
         val parts = query.split(",", " ").filter { it.isNotBlank() }
         if (parts.size >= 2) {
             val lat = parts[0].toDoubleOrNull()
             val lng = parts[1].toDoubleOrNull()
             if (lat != null && lng != null && lat in -90.0..90.0 && lng in -180.0..180.0) {
-                return LatLng(lat, lng)
+                return GeoPoint(lat, lng)
             }
         }
-
-        // 2. Try Android Geocoder
-        try {
-            val geocoder = Geocoder(this@RidingActivity, Locale.getDefault())
-            val results: List<Address>? = geocoder.getFromLocationName(query, 1)
-            if (!results.isNullOrEmpty()) {
-                val address = results[0]
-                return LatLng(address.latitude, address.longitude)
-            }
+        // 2. Fall back to the platform geocoder
+        return try {
+            @Suppress("DEPRECATION")
+            val results: List<Address>? =
+                Geocoder(this, Locale.getDefault()).getFromLocationName(query, 1)
+            results?.firstOrNull()?.let { GeoPoint(it.latitude, it.longitude) }
         } catch (e: Exception) {
-            e.printStackTrace()
+            null
         }
-
-        return null
     }
 
-    /**
-     * Change 4 & 5: Present clear route from rider to shared destination with multiple choices
-     */
-    private fun displayDestinationAndRoutes(destination: LatLng, title: String) {
-        val riderLoc = currentRiderLatLng ?: locationTracker.getLastLocation()?.let {
-            LatLng(it.latitude, it.longitude)
-        } ?: LatLng(destination.latitude - 0.05, destination.longitude - 0.05)
-
+    private fun displayDestinationAndRoutes(destination: GeoPoint, title: String) {
+        val riderLoc = currentRiderLatLng
+            ?: locationTracker.getLastLocation()?.let { GeoPoint(it.latitude, it.longitude) }
+            ?: GeoPoint(destination.latitude - 0.05, destination.longitude - 0.05)
         currentRiderLatLng = riderLoc
 
-        // Place Destination Marker
-        destinationMarker?.remove()
-        val destIcon = bitmapDescriptorFromVector(this, R.drawable.ic_destination_marker)
-        destinationMarker = mMap?.addMarker(
-            MarkerOptions()
-                .position(destination)
-                .title(title)
-                .icon(destIcon ?: BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-        )
+        destinationMarker?.let { binding.mapView.overlays.remove(it) }
+        destinationMarker = Marker(binding.mapView).apply {
+            position = destination
+            this.title = title
+            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            icon = ContextCompat.getDrawable(this@RidingActivity, R.drawable.ic_destination_marker)
+        }.also { binding.mapView.overlays.add(it) }
 
-        // Calculate distance and travel time
-        val results = FloatArray(1)
-        Location.distanceBetween(riderLoc.latitude, riderLoc.longitude, destination.latitude, destination.longitude, results)
-        val distanceMeters = results[0]
-        val distanceKm = distanceMeters / 1000f
+        binding.layoutRouteOptions.visibility = View.VISIBLE
+        refreshRouteEtas()
+        selectRoute(selectedRoute)
+        renderRoutePolylines(riderLoc, destination)
 
-        // Estimated two-wheeler city travel time (average ~32 km/h)
-        val estMinutes = (distanceKm / 32f * 60f).roundToInt().coerceAtLeast(1)
-
-        binding.tvRouteDistanceTime.text = String.format(Locale.US, "📍 %.1f km • ~%d mins", distanceKm, estMinutes)
-        binding.layoutRouteOptions.visibility = android.view.View.VISIBLE
-
-        // Render multiple route choices
-        renderRoutePolylines(riderLoc, destination, distanceKm)
-
-        // Fit map bounds to show both rider and destination
         try {
-            val bounds = LatLngBounds.builder()
-                .include(riderLoc)
-                .include(destination)
-                .build()
-            mMap?.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 180))
-        } catch (_: Exception) {}
+            val pts = listOf(riderLoc, destination) + stops.map { it.second }
+            binding.mapView.zoomToBoundingBox(
+                BoundingBox.fromGeoPointsSafe(pts).increaseByScale(1.4f), true, 120
+            )
+        } catch (_: Exception) {
+        }
+        binding.mapView.invalidate()
     }
 
-    /**
-     * Renders alternative routes (Preferred, Shortest, Toll-Free, Low-Traffic)
-     */
-    private fun renderRoutePolylines(origin: LatLng, dest: LatLng, distanceKm: Float) {
-        // Clear previous lines
-        activeRoutePolyline?.remove()
-        alternativePolylines.forEach { it.remove() }
+    private fun addPlainMarker(point: GeoPoint, label: String) {
+        val marker = Marker(binding.mapView).apply {
+            position = point
+            title = label
+            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+        }
+        stopMarkers.add(marker)
+        binding.mapView.overlays.add(marker)
+        binding.mapView.invalidate()
+    }
+
+    // ── Route maths ──────────────────────────────────────────────────────────
+
+    /** Total journey distance: rider -> each stop in order -> destination. */
+    private fun baseDistanceKm(): Float {
+        val rider = currentRiderLatLng ?: return 0f
+        val dest = currentDestinationLatLng ?: return 0f
+        val legs = buildList {
+            add(rider)
+            stops.forEach { add(it.second) }
+            add(dest)
+        }
+        var metres = 0f
+        for (i in 1 until legs.size) {
+            val r = FloatArray(1)
+            Location.distanceBetween(
+                legs[i - 1].latitude, legs[i - 1].longitude,
+                legs[i].latitude, legs[i].longitude, r
+            )
+            metres += r[0]
+        }
+        return metres / 1000f
+    }
+
+    private fun routeKm(flavour: RouteFlavour): Float =
+        baseDistanceKm() * flavour.distanceFactor * routePrefs.distancePenalty()
+
+    private fun etaMinutes(flavour: RouteFlavour): Int {
+        val speed = routePrefs.travelMode.avgSpeedKmh * flavour.speedFactor * routePrefs.speedPenalty()
+        if (speed <= 0f) return 1
+        return (routeKm(flavour) / speed * 60f).roundToInt().coerceAtLeast(1)
+    }
+
+    /** Recomputes every route card; options the preferences rule out are dimmed. */
+    private fun refreshRouteEtas() {
+        routeCards.forEach { (flavour, views) ->
+            val (card, eta) = views
+            val allowed = routePrefs.permits(flavour)
+            card.isEnabled = allowed
+            card.alpha = if (allowed) 1f else 0.4f
+            eta.text = if (allowed) getString(R.string.eta_minutes, etaMinutes(flavour)) else "—"
+        }
+        if (!routePrefs.permits(selectedRoute)) {
+            RouteFlavour.entries.firstOrNull { routePrefs.permits(it) }?.let { selectRoute(it) }
+        }
+    }
+
+    private fun selectRoute(option: RouteFlavour) {
+        selectedRoute = option
+        val onPrimary = ContextCompat.getColor(this, R.color.white)
+        routeCards.forEach { (candidate, views) ->
+            val (card, etaView) = views
+            val checked = candidate == option
+            card.isChecked = checked
+            val title = (card.getChildAt(0) as? android.view.ViewGroup)?.getChildAt(0) as? TextView
+            if (checked) {
+                title?.setTextColor(onPrimary)
+                etaView.setTextColor(onPrimary)
+            } else {
+                title?.setTextColor(themeColor(com.google.android.material.R.attr.colorOnBackground))
+                etaView.setTextColor(themeColor(com.google.android.material.R.attr.colorOnSurfaceVariant))
+            }
+        }
+        binding.tvRouteDistanceTime.text =
+            getString(R.string.eta_summary, etaMinutes(option), routeKm(option))
+        binding.tvRouteVia.text = getString(
+            R.string.eta_via,
+            getString(option.labelRes),
+            destinationLabel.ifBlank { getString(R.string.nav_your_location) }
+        )
+        activeRoutePolyline?.outlinePaint?.color = Color.parseColor(option.colorHex)
+        binding.mapView.invalidate()
+    }
+
+    private fun themeColor(attr: Int): Int {
+        val typed = android.util.TypedValue()
+        theme.resolveAttribute(attr, typed, true)
+        return typed.data
+    }
+
+    private fun renderRoutePolylines(origin: GeoPoint, dest: GeoPoint) {
+        activeRoutePolyline?.let { binding.mapView.overlays.remove(it) }
+        alternativePolylines.forEach { binding.mapView.overlays.remove(it) }
         alternativePolylines.clear()
 
-        // 1. Primary Route (Preferred Two-Wheeler Route - Blue/Yellow)
-        val preferredPoints = generateWaypoints(origin, dest, curvature = 0.002)
-        activeRoutePolyline = mMap?.addPolyline(
-            PolylineOptions()
-                .addAll(preferredPoints)
-                .color(ContextCompat.getColor(this, R.color.resqgo_primary))
-                .width(14f)
-                .geodesic(true)
-        )
-
-        // 2. Shortest Route (Direct line with slight road angle)
-        val shortestPoints = generateWaypoints(origin, dest, curvature = 0.0)
-        val shortestPoly = mMap?.addPolyline(
-            PolylineOptions()
-                .addAll(shortestPoints)
-                .color(Color.parseColor("#80718096")) // Muted Gray
-                .width(10f)
-                .geodesic(true)
-        )
-        shortestPoly?.let { alternativePolylines.add(it) }
-
-        // 3. Low-Traffic Route
-        val lowTrafficPoints = generateWaypoints(origin, dest, curvature = -0.003)
-        val lowTrafficPoly = mMap?.addPolyline(
-            PolylineOptions()
-                .addAll(lowTrafficPoints)
-                .color(Color.parseColor("#8048BB78")) // Light Green
-                .width(10f)
-                .geodesic(true)
-        )
-        lowTrafficPoly?.let { alternativePolylines.add(it) }
-    }
-
-    /**
-     * Generates realistic road-like waypoint curve between origin and destination
-     */
-    private fun generateWaypoints(start: LatLng, end: LatLng, curvature: Double): List<LatLng> {
-        val points = mutableListOf<LatLng>()
-        points.add(start)
-
-        val steps = 8
-        for (i in 1 until steps) {
-            val fraction = i.toDouble() / steps
-            val lat = start.latitude + fraction * (end.latitude - start.latitude)
-            val lng = start.longitude + fraction * (end.longitude - start.longitude)
-
-            // Add perpendicular offset for realistic routing curves
-            val offset = Math.sin(fraction * Math.PI) * curvature
-            points.add(LatLng(lat + offset, lng - offset))
+        // Waypoints run rider -> stops -> destination so added stops bend the line.
+        val via = buildList {
+            add(origin)
+            stops.forEach { add(it.second) }
+            add(dest)
         }
 
+        activeRoutePolyline = Polyline().apply {
+            setPoints(curveThrough(via, 0.002))
+            outlinePaint.color = Color.parseColor(selectedRoute.colorHex)
+            outlinePaint.strokeWidth = 14f
+        }.also { binding.mapView.overlays.add(it) }
+
+        listOf(0.0, -0.003).forEach { curvature ->
+            val alt = Polyline().apply {
+                setPoints(curveThrough(via, curvature))
+                outlinePaint.color = Color.parseColor("#80718096")
+                outlinePaint.strokeWidth = 9f
+            }
+            alternativePolylines.add(alt)
+            binding.mapView.overlays.add(alt)
+        }
+        binding.mapView.invalidate()
+    }
+
+    /** Road-like curve through every waypoint in order. */
+    private fun curveThrough(waypoints: List<GeoPoint>, curvature: Double): List<GeoPoint> {
+        val out = mutableListOf<GeoPoint>()
+        for (i in 1 until waypoints.size) {
+            out.addAll(generateWaypoints(waypoints[i - 1], waypoints[i], curvature))
+        }
+        return out
+    }
+
+    private fun generateWaypoints(start: GeoPoint, end: GeoPoint, curvature: Double): List<GeoPoint> {
+        val points = mutableListOf(start)
+        val steps = 8
+        for (i in 1 until steps) {
+            val f = i.toDouble() / steps
+            val lat = start.latitude + f * (end.latitude - start.latitude)
+            val lng = start.longitude + f * (end.longitude - start.longitude)
+            val offset = Math.sin(f * Math.PI) * curvature
+            points.add(GeoPoint(lat + offset, lng - offset))
+        }
         points.add(end)
         return points
     }
 
-    private fun onRouteOptionSelected(chipId: Int) {
-        val dest = currentDestinationLatLng ?: return
-        val rider = currentRiderLatLng ?: return
+    // ── Live position ────────────────────────────────────────────────────────
 
-        val results = FloatArray(1)
-        Location.distanceBetween(rider.latitude, rider.longitude, dest.latitude, dest.longitude, results)
-        val baseKm = results[0] / 1000f
-
-        when (chipId) {
-            R.id.chipPreferred -> {
-                val estMins = (baseKm / 35f * 60f).roundToInt().coerceAtLeast(1)
-                binding.tvRouteDistanceTime.text = String.format(Locale.US, "🟢 Preferred: %.1f km • ~%d mins", baseKm, estMins)
-                activeRoutePolyline?.color = ContextCompat.getColor(this, R.color.resqgo_primary)
-            }
-            R.id.chipShortest -> {
-                val shortKm = (baseKm * 0.92f)
-                val estMins = (shortKm / 28f * 60f).roundToInt().coerceAtLeast(1)
-                binding.tvRouteDistanceTime.text = String.format(Locale.US, "⚡ Shortest: %.1f km • ~%d mins", shortKm, estMins)
-                activeRoutePolyline?.color = Color.parseColor("#3182CE") // Blue
-            }
-            R.id.chipTollFree -> {
-                val tollKm = (baseKm * 1.05f)
-                val estMins = (tollKm / 32f * 60f).roundToInt().coerceAtLeast(1)
-                binding.tvRouteDistanceTime.text = String.format(Locale.US, "🚫 Toll-Free: %.1f km • ~%d mins", tollKm, estMins)
-                activeRoutePolyline?.color = Color.parseColor("#D69E2E") // Amber
-            }
-            R.id.chipLowTraffic -> {
-                val trafficKm = (baseKm * 1.10f)
-                val estMins = (trafficKm / 42f * 60f).roundToInt().coerceAtLeast(1)
-                binding.tvRouteDistanceTime.text = String.format(Locale.US, "🚗 Low-Traffic: %.1f km • ~%d mins", trafficKm, estMins)
-                activeRoutePolyline?.color = Color.parseColor("#38A169") // Green
-            }
-        }
-    }
-
-    /**
-     * Updates real-time moving bike marker and rider location
-     */
     private fun onLocationChanged(location: Location) {
-        val latLng = LatLng(location.latitude, location.longitude)
-        currentRiderLatLng = latLng
+        val point = GeoPoint(location.latitude, location.longitude)
+        currentRiderLatLng = point
         lastBearing = location.bearing
 
-        binding.tvDiagCoords.text = String.format(Locale.US, "%.5f, %.5f", location.latitude, location.longitude)
+        binding.tvDiagCoords.text =
+            String.format(Locale.US, "%.5f, %.5f", location.latitude, location.longitude)
 
-        updateRiderPosition(latLng, location.bearing)
-
-        if (isNavigating) {
-            val cameraPosition = CameraPosition.builder()
-                .target(latLng)
-                .zoom(18f)
-                .bearing(location.bearing)
-                .tilt(45f)
-                .build()
-            mMap?.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
-        }
+        updateRiderPosition(point, location.bearing)
+        if (currentDestinationLatLng != null) refreshRouteEtas()
+        if (isNavigating) binding.mapView.controller.animateTo(point, 18.0, 800L)
     }
 
-    private fun updateRiderPosition(position: LatLng, bearing: Float) {
+    private fun updateRiderPosition(position: GeoPoint, bearing: Float) {
         if (bikeMarker == null) {
-            val bikeIcon = bitmapDescriptorFromVector(this, R.drawable.ic_bike_marker)
-            bikeMarker = mMap?.addMarker(
-                MarkerOptions()
-                    .position(position)
-                    .anchor(0.5f, 0.5f)
-                    .rotation(bearing)
-                    .flat(true)
-                    .title("Your Bike")
-                    .icon(bikeIcon ?: BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-            )
-        } else {
-            bikeMarker?.position = position
-            if (bearing != 0f) {
-                bikeMarker?.rotation = bearing
+            bikeMarker = Marker(binding.mapView).apply {
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                title = "Your Bike"
+                icon = ContextCompat.getDrawable(this@RidingActivity, R.drawable.ic_bike_marker)
+                isFlat = true
+            }.also { binding.mapView.overlays.add(it) }
+        }
+        bikeMarker?.apply {
+            this.position = position
+            // osmdroid rotates anticlockwise; GPS bearing is clockwise from north.
+            if (bearing != 0f) rotation = -bearing
+        }
+        binding.mapView.invalidate()
+        updateCurrentLocationLabel(position)
+    }
+
+    private var lastGeocodedAt = 0L
+
+    /** Reverse-geocodes the rider position at most once every 20 s. */
+    private fun updateCurrentLocationLabel(position: GeoPoint) {
+        val now = System.currentTimeMillis()
+        if (now - lastGeocodedAt < 20_000L) return
+        lastGeocodedAt = now
+        CoroutineScope(Dispatchers.IO).launch {
+            val label = locationTracker.getAddressFromLocation(position.latitude, position.longitude)
+            withContext(Dispatchers.Main) {
+                if (label.isNotBlank() && PermissionHelper.hasLocation(this@RidingActivity)) {
+                    binding.tvCurrentLocation.text = label
+                }
             }
         }
     }
 
-    private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
-        return try {
-            val drawable = ContextCompat.getDrawable(context, vectorResId) ?: return null
-            drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
-            val bitmap = Bitmap.createBitmap(
-                drawable.intrinsicWidth,
-                drawable.intrinsicHeight,
-                Bitmap.Config.ARGB_8888
-            )
-            val canvas = Canvas(bitmap)
-            drawable.draw(canvas)
-            BitmapDescriptorFactory.fromBitmap(bitmap)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
+    // ── Misc ─────────────────────────────────────────────────────────────────
+
+    private fun formatTimer(seconds: Int): String =
+        if (seconds < 60) {
+            seconds.toString() + "s"
+        } else {
+            val mins = (seconds / 60).toString() + " min"
+            if (seconds % 60 != 0) mins + " " + (seconds % 60) + "s" else mins
         }
-    }
 
     private fun hideKeyboard() {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
@@ -581,9 +812,7 @@ class RidingActivity : AppCompatActivity(), OnMapReadyCallback {
         AlertDialog.Builder(this)
             .setTitle(R.string.end_ride_confirm)
             .setMessage(R.string.end_ride_message)
-            .setPositiveButton(R.string.yes_end_ride) { _, _ ->
-                endRide()
-            }
+            .setPositiveButton(R.string.yes_end_ride) { _, _ -> endRide() }
             .setNegativeButton(R.string.cancel, null)
             .show()
     }
@@ -593,12 +822,20 @@ class RidingActivity : AppCompatActivity(), OnMapReadyCallback {
         val serviceIntent = Intent(this, RideMonitoringService::class.java).apply {
             action = RideMonitoringService.ACTION_STOP
         }
-        stopService(serviceIntent)
+        try {
+            startService(serviceIntent)
+        } catch (e: Exception) {
+            stopService(serviceIntent)
+        }
         finish()
     }
 
     override fun onResume() {
         super.onResume()
+        binding.mapView.onResume()
+        binding.tvSosTimerDisplay.text =
+            getString(R.string.auto_sos_timer_info, formatTimer(prefs.sosTimerSeconds))
+        updateMonitoringStatus()
         val filter = IntentFilter(HomeActivity.ACTION_SENSOR_UPDATE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(sensorReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
@@ -609,8 +846,10 @@ class RidingActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onPause() {
         super.onPause()
+        binding.mapView.onPause()
         try {
             unregisterReceiver(sensorReceiver)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 }

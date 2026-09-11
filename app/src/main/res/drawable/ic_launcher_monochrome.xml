@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Themed-icon (Android 13+) variant: one-colour silhouette, system-tinted.
+     The cross and wheels are cut out of the shield so the shape survives tinting. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108"
+    android:tint="#000000">
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M54,22 L84,33 V56 C84,70 71,81 54,87 C37,81 24,70 24,56 V33 Z
+                          M49.5,35 h9 v8.5 h8.5 v9 h-8.5 v8.5 h-9 v-8.5 h-8.5 v-9 h8.5 Z
+                          M41,72 a4.6,4.6 0 1,0 9.2,0 a4.6,4.6 0 1,0 -9.2,0 Z
+                          M57.8,72 a4.6,4.6 0 1,0 9.2,0 a4.6,4.6 0 1,0 -9.2,0 Z" />
+</vector>

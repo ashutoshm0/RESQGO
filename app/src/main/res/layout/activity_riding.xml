@@ -1,44 +1,392 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout 
+<!--
+  RESQGO navigation screen — laid out to the approved design board:
+  brand bar + SOS · origin/destination card · route choices with ETAs ·
+  full-bleed map with live bike marker · ETA sheet with Start Ride ·
+  bottom navigation. Raw sensor readings live in the pull-up diagnostics
+  drawer (Priority 7 in the information hierarchy).
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/resqgo_bg">
+    android:background="?android:attr/colorBackground">
 
-    <!-- 1. The Full-Screen Google Map -->
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/mapFragment"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
+    <!-- 1. Full-screen OpenStreetMap view (osmdroid — no API key, no billing) -->
+    <org.osmdroid.views.MapView
+        android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- 2. Top Bar: Floating Card for Safety Status, Speedometer, Destination, and Route Selection -->
+    <!-- Shown instead of tiles when the build has no Maps API key.
+         Sits on bare map background, so it carries its own surface plate. -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/tvMapUnavailable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="32dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="20dp"
+            android:text="@string/nav_maps_key_missing"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="14sp" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ══ TOP: brand bar, search card, route choices ══════════════════════ -->
     <LinearLayout
+        android:id="@+id/topBarContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipToPadding="false"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:clipToPadding="false">
+        android:paddingHorizontal="12dp"
+        android:paddingTop="12dp">
 
-        <!-- Top Header Card -->
+        <!-- Brand bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="4dp">
+
+                <ImageButton
+                    android:id="@+id/btnMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/nav_menu"
+                    android:src="@drawable/ic_menu"
+                    app:tint="?attr/colorOnBackground" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- RESQGO wordmark. It floats over the map, so it needs its own
+                 surface pill or it disappears against light map tiles. -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    app:cardBackgroundColor="?attr/colorSurface"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.02"
+                            android:text="RES"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="19sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.02"
+                            android:text="Q"
+                            android:textColor="?attr/colorPrimary"
+                            android:textSize="19sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.02"
+                            android:text="GO"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="19sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </FrameLayout>
+
+            <!-- SOS pill -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSosPanic"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="20dp"
+                android:text="@string/btn_sos"
+                android:textColor="@color/white"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:backgroundTint="?attr/colorError"
+                app:cornerRadius="22dp"
+                app:elevation="4dp" />
+        </LinearLayout>
+
+        <!-- Origin → destination card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="@color/resqgo_surface"
-            app:cardCornerRadius="18dp"
+            android:layout_marginTop="10dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardCornerRadius="16dp"
             app:cardElevation="6dp"
-            app:strokeColor="@color/resqgo_divider"
+            app:strokeColor="?attr/colorOutline"
             app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="14dp">
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp">
 
-                <!-- Row 1: Safety Status + Crash Timer + Speedometer -->
+                <!-- Current location row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="42dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_dot_origin" />
+
+                    <TextView
+                        android:id="@+id/tvCurrentLocation"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:text="@string/nav_your_location"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvSpeed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 km/h"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="26dp"
+                    android:background="?attr/colorOutline" />
+
+                <!-- Destination row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_pin_destination" />
+
+                    <EditText
+                        android:id="@+id/etDestination"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:hint="@string/nav_destination_hint"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:singleLine="true"
+                        android:textColor="?attr/colorOnBackground"
+                        android:textColorHint="?attr/colorOnSurfaceVariant"
+                        android:textSize="13sp" />
+
+                    <ImageButton
+                        android:id="@+id/btnSearchDestination"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/nav_destination_hint"
+                        android:src="@drawable/ic_search"
+                        app:tint="?attr/colorPrimary" />
+
+                    <ImageButton
+                        android:id="@+id/btnTripOptions"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="4dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/trip_options_desc"
+                        android:src="@drawable/ic_more_vert"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Route choices — label over ETA, exactly as on the design board -->
+        <HorizontalScrollView
+            android:id="@+id/layoutRouteOptions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:clipToPadding="false"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRouteShortest"
+                    style="@style/Widget.RESQGO.RouteCard">
+
+                    <LinearLayout style="@style/Widget.RESQGO.RouteCardContent">
+                        <TextView
+                            style="@style/Widget.RESQGO.RouteCardTitle"
+                            android:text="@string/nav_route_shortest" />
+                        <TextView
+                            android:id="@+id/tvTimeShortest"
+                            style="@style/Widget.RESQGO.RouteCardEta" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRouteTollFree"
+                    style="@style/Widget.RESQGO.RouteCard">
+
+                    <LinearLayout style="@style/Widget.RESQGO.RouteCardContent">
+                        <TextView
+                            style="@style/Widget.RESQGO.RouteCardTitle"
+                            android:text="@string/nav_route_toll_free" />
+                        <TextView
+                            android:id="@+id/tvTimeTollFree"
+                            style="@style/Widget.RESQGO.RouteCardEta" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRouteLowTraffic"
+                    style="@style/Widget.RESQGO.RouteCard">
+
+                    <LinearLayout style="@style/Widget.RESQGO.RouteCardContent">
+                        <TextView
+                            style="@style/Widget.RESQGO.RouteCardTitle"
+                            android:text="@string/nav_route_low_traffic" />
+                        <TextView
+                            android:id="@+id/tvTimeLowTraffic"
+                            style="@style/Widget.RESQGO.RouteCardEta" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRouteBetter"
+                    style="@style/Widget.RESQGO.RouteCard">
+
+                    <LinearLayout style="@style/Widget.RESQGO.RouteCardContent">
+                        <TextView
+                            style="@style/Widget.RESQGO.RouteCardTitle"
+                            android:text="@string/nav_route_better" />
+                        <TextView
+                            android:id="@+id/tvTimeBetter"
+                            style="@style/Widget.RESQGO.RouteCardEta" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <!-- ══ Map side controls ═══════════════════════════════════════════════ -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="230dp"
+        android:orientation="vertical">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabMapType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/nav_menu"
+            android:src="@drawable/ic_layers"
+            app:backgroundTint="?attr/colorSurface"
+            app:elevation="6dp"
+            app:fabSize="mini"
+            app:tint="?attr/colorPrimary" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabRecenter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:contentDescription="@string/nav_recenter"
+            android:src="@drawable/ic_my_location"
+            app:backgroundTint="?attr/colorSurface"
+            app:elevation="6dp"
+            app:fabSize="mini"
+            app:tint="?attr/colorPrimary" />
+    </LinearLayout>
+
+    <!-- ══ BOTTOM: ETA sheet + Start Ride + bottom navigation ══════════════ -->
+    <LinearLayout
+        android:id="@+id/bottomContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="-24dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="18dp"
+                android:paddingTop="14dp"
+                android:paddingBottom="40dp">
+
+                <!-- Monitoring status + configured SOS countdown -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -46,251 +394,111 @@
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:contentDescription="@null"
                         android:src="@drawable/ic_shield"
                         app:tint="@color/resqgo_success" />
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="8dp"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tvMonitoringStatus"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/status_monitoring"
-                            android:textColor="@color/resqgo_success"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tvSosTimerDisplay"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="SOS Countdown: 30s"
-                            android:textColor="@color/resqgo_text_secondary"
-                            android:textSize="11sp" />
-                    </LinearLayout>
-
-                    <!-- Speedometer Badge -->
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/tvMonitoringStatus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="end"
-                        android:orientation="vertical">
+                        android:layout_marginStart="6dp"
+                        android:text="@string/status_monitoring"
+                        android:textColor="@color/resqgo_success"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
 
-                        <TextView
-                            android:id="@+id/tvSpeed"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0 km/h"
-                            android:textColor="@color/resqgo_text_primary"
-                            android:textSize="22sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="CURRENT SPEED"
-                            android:textColor="@color/resqgo_text_secondary"
-                            android:textSize="9sp"
-                            android:textStyle="bold"
-                            android:letterSpacing="0.05" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Row 2: Destination Search / Shared Location Input -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_search_box"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="12dp">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_search"
-                        app:tint="@color/resqgo_text_secondary" />
-
-                    <EditText
-                        android:id="@+id/etDestination"
+                    <TextView
+                        android:id="@+id/tvSosTimerDisplay"
                         android:layout_width="0dp"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="8dp"
-                        android:background="@android:color/transparent"
-                        android:hint="Enter destination or paste location link"
-                        android:textColor="@color/resqgo_text_primary"
-                        android:textColorHint="@color/resqgo_text_secondary"
-                        android:textSize="13sp"
-                        android:imeOptions="actionSearch"
-                        android:singleLine="true" />
-
-                    <ImageButton
-                        android:id="@+id/btnSearchDestination"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:src="@drawable/ic_navigation"
-                        app:tint="?attr/colorPrimary" />
+                        android:gravity="end"
+                        android:text="@string/timer_section_title"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="12sp" />
                 </LinearLayout>
 
-                <!-- Row 3: Destination Info & Route Choices (visible when destination is set) -->
-                <LinearLayout
-                    android:id="@+id/layoutRouteOptions"
+                <!-- Selected route summary -->
+                <TextView
+                    android:id="@+id/tvRouteDistanceTime"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:orientation="vertical"
-                    android:visibility="gone">
+                    android:text="@string/nav_your_location"
+                    android:textColor="?attr/colorOnBackground"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/tvRouteVia"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/home_tagline"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="13sp" />
 
-                        <TextView
-                            android:id="@+id/tvRouteDistanceTime"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="📍 6.4 km • ~15 mins"
-                            android:textColor="?attr/colorPrimary"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
+                <!-- Primary action row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnStartNavigation"
-                            android:layout_width="wrap_content"
-                            android:layout_height="36dp"
-                            android:text="Start Nav"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            app:cornerRadius="18dp"
-                            android:paddingHorizontal="14dp"
-                            app:backgroundTint="?attr/colorPrimary"
-                            android:textColor="@color/white" />
-                    </LinearLayout>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnStartNavigation"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:text="@string/nav_start_ride"
+                        android:textColor="?attr/colorOnPrimary"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="?attr/colorPrimary"
+                        app:cornerRadius="14dp" />
 
-                    <!-- Horizontal Scroll for Route Options (Shortest, Toll-free, Low-traffic, Preferred) -->
-                    <HorizontalScrollView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:scrollbars="none">
-
-                        <com.google.android.material.chip.ChipGroup
-                            android:id="@+id/chipGroupRoutes"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:singleSelection="true">
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipPreferred"
-                                style="@style/Widget.Material3.Chip.Filter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:checked="true"
-                                android:text="🟢 Preferred" />
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipShortest"
-                                style="@style/Widget.Material3.Chip.Filter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="⚡ Shortest" />
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipTollFree"
-                                style="@style/Widget.Material3.Chip.Filter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="🚫 Toll-Free" />
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipLowTraffic"
-                                style="@style/Widget.Material3.Chip.Filter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="🚗 Low-Traffic" />
-                        </com.google.android.material.chip.ChipGroup>
-                    </HorizontalScrollView>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEndRide"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="52dp"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/btn_end_ride"
+                        android:textColor="?attr/colorOnBackground"
+                        android:textSize="13sp"
+                        app:cornerRadius="14dp"
+                        app:strokeColor="?attr/colorOutline" />
                 </LinearLayout>
-
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNav"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorSurface"
+            app:elevation="12dp"
+            app:itemActiveIndicatorStyle="@null"
+            app:labelVisibilityMode="labeled"
+            app:menu="@menu/menu_bottom_nav" />
     </LinearLayout>
 
-    <!-- Floating Re-Center Button -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabRecenter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="175dp"
-        android:contentDescription="Re-center on bike"
-        android:src="@drawable/ic_my_location"
-        app:backgroundTint="@color/resqgo_surface"
-        app:tint="?attr/colorPrimary"
-        app:fabSize="mini"
-        app:elevation="6dp" />
-
-    <!-- Bottom Controls & SOS -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:orientation="vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingBottom="56dp">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSosPanic"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:backgroundTint="@color/resqgo_alert"
-            android:text="🚨 SOS EMERGENCY"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:cornerRadius="16dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnEndRide"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="8dp"
-            android:backgroundTint="@color/resqgo_surface"
-            android:text="@string/btn_end_ride"
-            android:textColor="@color/resqgo_text_primary"
-            android:textSize="14sp"
-            app:cornerRadius="16dp"
-            app:strokeColor="@color/resqgo_divider"
-            app:strokeWidth="1dp" />
-    </LinearLayout>
-
-    <!-- Diagnostics Bottom Sheet (Priority 7 in Information Hierarchy) -->
+    <!-- ══ Diagnostics drawer (secondary — Priority 7) ═════════════════════ -->
     <androidx.cardview.widget.CardView
         android:id="@+id/bottomSheetDiagnostics"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:behavior_hideable="false"
-        app:behavior_peekHeight="46dp"
-        app:cardBackgroundColor="@color/resqgo_surface"
+        app:behavior_peekHeight="0dp"
+        app:cardBackgroundColor="?attr/colorSurface"
         app:cardCornerRadius="20dp"
         app:cardElevation="16dp"
-        app:strokeColor="@color/resqgo_divider"
-        app:strokeWidth="1dp"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        app:strokeColor="?attr/colorOutline"
+        app:strokeWidth="1dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -302,19 +510,18 @@
                 android:layout_width="40dp"
                 android:layout_height="4dp"
                 android:layout_gravity="center_horizontal"
-                android:background="@color/resqgo_divider" />
+                android:background="?attr/colorOutline" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="center"
-                android:text="▲ Swipe Up: Sensor Diagnostics (Secondary View)"
-                android:textColor="@color/resqgo_text_secondary"
+                android:text="@string/nav_diagnostics_hint"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
-            <!-- Sensor Readouts Table -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -330,8 +537,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="G-Force"
-                        android:textColor="@color/resqgo_text_secondary"
+                        android:text="@string/g_force_label"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="11sp" />
 
                     <TextView
@@ -339,7 +546,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="1.00 G"
-                        android:textColor="@color/resqgo_text_primary"
+                        android:textColor="?attr/colorOnBackground"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -354,7 +561,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Pitch (Gyro X)"
-                        android:textColor="@color/resqgo_text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="11sp" />
 
                     <TextView
@@ -362,7 +569,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0.00 rad/s"
-                        android:textColor="@color/resqgo_text_primary"
+                        android:textColor="?attr/colorOnBackground"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -377,7 +584,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Roll (Gyro Y)"
-                        android:textColor="@color/resqgo_text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="11sp" />
 
                     <TextView
@@ -385,7 +592,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0.00 rad/s"
-                        android:textColor="@color/resqgo_text_primary"
+                        android:textColor="?attr/colorOnBackground"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -395,6 +602,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
+                android:layout_marginBottom="8dp"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -407,14 +615,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="GPS Lock"
-                        android:textColor="@color/resqgo_text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="11sp" />
 
                     <TextView
                         android:id="@+id/tvDiagGps"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Acquiring..."
+                        android:text="Acquiring…"
                         android:textColor="@color/resqgo_success"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -430,20 +638,19 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Current Coordinates"
-                        android:textColor="@color/resqgo_text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="11sp" />
 
                     <TextView
                         android:id="@+id/tvDiagCoords"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:fontFamily="monospace"
                         android:text="-- , --"
-                        android:textColor="@color/resqgo_text_primary"
-                        android:textSize="13sp"
-                        android:fontFamily="monospace" />
+                        android:textColor="?attr/colorOnBackground"
+                        android:textSize="13sp" />
                 </LinearLayout>
             </LinearLayout>
-
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

@@ -3,6 +3,7 @@ package com.example.resqgo.ui.history
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import com.example.resqgo.util.applySystemBarPadding
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +25,7 @@ class RideHistoryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRideHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.applySystemBarPadding(top = true, bottom = true)
 
         binding.btnBack.setOnClickListener { finish() }
 

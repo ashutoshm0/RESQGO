@@ -1,44 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- LIGHT THEME COLORS (Haldi & Kumkum) -->
-    <color name="md_theme_light_primary">#F4B41A</color> <!-- Turmeric Yellow -->
-    <color name="md_theme_light_onPrimary">#2D3142</color> <!-- Deep Indigo -->
-    <color name="md_theme_light_background">#F9F6F0</color> <!-- Ivory Cream -->
-    <color name="md_theme_light_surface">#FFFFFF</color> <!-- Pure White -->
-    <color name="md_theme_light_surfaceVariant">#F0EBE1</color> <!-- Slightly darker ivory -->
-    <color name="md_theme_light_error">#D95D39</color> <!-- Terracotta Red -->
+    <!-- ══════════════════════════════════════════════════════════════════
+         RESQGO Brand Palette
+         Light  = "Palette 2 — Earthy Ochre"    (warm, friendly, reliable)
+         Dark   = "Palette 9 — Midnight Minimal" (premium, clean, focused)
+         Values taken from the approved design board.
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Brand constants (identical in both themes) -->
+    <color name="brand_terracotta">#D2691E</color>  <!-- Light primary  -->
+    <color name="brand_sand">#F1D9B7</color>        <!-- Light accent   -->
+    <color name="brand_ink">#2E2E2E</color>         <!-- Light text     -->
+    <color name="brand_cream">#FAF5ED</color>       <!-- Light bg       -->
+    <color name="brand_obsidian">#080B0B</color>    <!-- Dark bg        -->
+    <color name="brand_slate">#374151</color>       <!-- Dark accent    -->
+    <color name="brand_gold">#FACC15</color>        <!-- Dark primary   -->
+    <color name="brand_snow">#F5F5F5</color>        <!-- Dark text      -->
+    <color name="brand_sos">#D32F2F</color>         <!-- SOS red (both) -->
+
+    <!-- ── Light Theme (Earthy Ochre) ─────────────────────────────────── -->
+    <color name="md_theme_light_primary">#D2691E</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_secondary">#A65B2F</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_tertiary">#6B8E23</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_background">#FAF5ED</color>
+    <color name="md_theme_light_onBackground">#2E2E2E</color>
+    <color name="md_theme_light_surface">#FFFFFF</color>
+    <color name="md_theme_light_onSurface">#2E2E2E</color>
+    <color name="md_theme_light_surfaceVariant">#F1D9B7</color>
+    <color name="md_theme_light_onSurfaceVariant">#7A6A57</color>
+    <color name="md_theme_light_error">#D32F2F</color>
     <color name="md_theme_light_onError">#FFFFFF</color>
-    <color name="md_theme_light_onBackground">#2D3142</color> <!-- Indigo text -->
-    <color name="md_theme_light_onSurface">#2D3142</color>
-    <color name="md_theme_light_onSurfaceVariant">#5C6073</color> <!-- Muted text -->
-    <color name="md_theme_light_outline">#D1C7B7</color> <!-- Border stroke -->
+    <color name="md_theme_light_outline">#E3D5C0</color>
 
-    <!-- DARK THEME COLORS (Midnight Gold) -->
-    <color name="md_theme_dark_primary">#E5A910</color> <!-- Muted Gold -->
-    <color name="md_theme_dark_onPrimary">#121417</color>
-    <color name="md_theme_dark_background">#121417</color> <!-- Obsidian -->
-    <color name="md_theme_dark_surface">#1C1F24</color> <!-- Slate Grey -->
-    <color name="md_theme_dark_surfaceVariant">#252A30</color>
-    <color name="md_theme_dark_error">#EF8354</color> <!-- Coral Red -->
-    <color name="md_theme_dark_onError">#121417</color>
-    <color name="md_theme_dark_onBackground">#EAE6E5</color> <!-- Ash White -->
-    <color name="md_theme_dark_onSurface">#EAE6E5</color>
-    <color name="md_theme_dark_onSurfaceVariant">#A3A7B0</color>
-    <color name="md_theme_dark_outline">#373E47</color> <!-- Border stroke -->
+    <!-- ── Dark Theme (Midnight Minimal) ──────────────────────────────── -->
+    <color name="md_theme_dark_primary">#FACC15</color>
+    <color name="md_theme_dark_onPrimary">#080B0B</color>
+    <color name="md_theme_dark_secondary">#374151</color>
+    <color name="md_theme_dark_onSecondary">#F5F5F5</color>
+    <color name="md_theme_dark_tertiary">#B0873A</color>
+    <color name="md_theme_dark_onTertiary">#080B0B</color>
+    <color name="md_theme_dark_background">#080B0B</color>
+    <color name="md_theme_dark_onBackground">#F5F5F5</color>
+    <color name="md_theme_dark_surface">#15191C</color>
+    <color name="md_theme_dark_onSurface">#F5F5F5</color>
+    <color name="md_theme_dark_surfaceVariant">#374151</color>
+    <color name="md_theme_dark_onSurfaceVariant">#9AA3AF</color>
+    <color name="md_theme_dark_error">#EF4444</color>
+    <color name="md_theme_dark_onError">#080B0B</color>
+    <color name="md_theme_dark_outline">#2A3037</color>
 
-    <!-- BASE CONSTANTS -->
+    <!-- Base constants -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">#00000000</color>
 
-    <!-- LEGACY MAPPINGS (MAPPED TO LIGHT THEME BY DEFAULT) -->
+    <!-- Legacy mappings (map to light theme by default; -night overrides) -->
     <color name="resqgo_primary">@color/md_theme_light_primary</color>
-    <color name="resqgo_primary_dark">@color/md_theme_light_primary</color>
-    <color name="resqgo_secondary">#8C99A8</color> <!-- Placeholder, not much used -->
+    <color name="resqgo_primary_dark">@color/md_theme_light_secondary</color>
+    <color name="resqgo_secondary">#7A6A57</color>
     <color name="resqgo_alert">@color/md_theme_light_error</color>
     <color name="resqgo_alert_dark">#B04627</color>
-    <color name="resqgo_warning">#F4B41A</color>
-    <color name="resqgo_success">#3A7D44</color> <!-- Earthy Green -->
+    <color name="resqgo_warning">@color/md_theme_light_primary</color>
+    <color name="resqgo_success">#2E7D32</color>
     <color name="resqgo_bg">@color/md_theme_light_background</color>
     <color name="resqgo_surface">@color/md_theme_light_surface</color>
     <color name="resqgo_surface2">@color/md_theme_light_surfaceVariant</color>

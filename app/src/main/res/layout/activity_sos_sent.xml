@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:clipToPadding="false"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/resqgo_bg"
+    android:background="?android:attr/colorBackground"
     android:fillViewport="true">
 
     <LinearLayout
@@ -21,7 +22,7 @@
             android:text="🚨 SOS Alert Sent"
             android:textSize="28sp"
             android:textStyle="bold"
-            android:textColor="@color/resqgo_alert"
+            android:textColor="?attr/colorError"
             android:layout_marginTop="40dp"
             android:gravity="center"/>
 
@@ -30,7 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardBackgroundColor="@color/resqgo_surface"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp">
 
@@ -47,7 +48,7 @@
                     android:text="Contacts notified"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:textColor="@color/resqgo_text_primary"/>
+                    android:textColor="?attr/colorOnBackground"/>
 
                 <TextView
                     android:id="@+id/tvLocationSent"
@@ -55,7 +56,7 @@
                     android:layout_height="wrap_content"
                     android:text="Location: --"
                     android:textSize="13sp"
-                    android:textColor="@color/resqgo_text_secondary"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="8dp"/>
 
                 <TextView
@@ -64,11 +65,59 @@
                     android:layout_height="wrap_content"
                     android:text="📍 Open in Google Maps"
                     android:textSize="14sp"
-                    android:textColor="@color/resqgo_secondary"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginTop="8dp"
                     android:clickable="true"
                     android:focusable="true"/>
 
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Live delivery status — every SOS channel reports its real outcome
+             here. The spec forbids silent failure, so nothing claims success
+             until the platform confirms it. -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:text="DELIVERY STATUS"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/deliveryStatusContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical" />
+
+                <Button
+                    android:id="@+id/btnSmsFallback"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="14dp"
+                    android:backgroundTint="?attr/colorError"
+                    android:text="✉️ Open SMS app with the alert"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    app:cornerRadius="12dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -81,7 +130,7 @@
             android:text="📞 Call Emergency Contact Now"
             android:textSize="15sp"
             android:textStyle="bold"
-            android:backgroundTint="@color/resqgo_primary"
+            android:backgroundTint="?attr/colorPrimary"
             android:textColor="@color/white"
             app:cornerRadius="12dp"/>
 
@@ -94,7 +143,7 @@
             android:text="🏥 Find Nearest Hospital"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:backgroundTint="@color/resqgo_secondary"
+            android:backgroundTint="?attr/colorOnSurfaceVariant"
             android:textColor="@color/white"
             app:cornerRadius="12dp"/>
 
@@ -115,8 +164,8 @@
             android:layout_marginBottom="32dp"
             android:text="✅ I'm Safe — Cancel Alert"
             android:textSize="15sp"
-            android:backgroundTint="@color/resqgo_surface"
-            android:textColor="@color/resqgo_text_secondary"
+            android:backgroundTint="?attr/colorSurface"
+            android:textColor="?attr/colorOnSurfaceVariant"
             app:cornerRadius="12dp"/>
 
     </LinearLayout>

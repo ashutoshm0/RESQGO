@@ -4,11 +4,16 @@
     package="com.example.resqgo">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <!-- Fallback foreground-service type: lets sensor-only crash monitoring keep
+         running on Android 14+ when the rider has not granted location yet.
+         Without this the service throws SecurityException and kills the app. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <!-- SEND_SMS is declared so it appears in Settings > Apps > RESQGO > Permissions.
          We do NOT request it at runtime (avoids Play Protect block on sideloaded APKs).
@@ -23,6 +28,27 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
+    <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false" />
+    <uses-feature android:name="android.hardware.sensor.gyroscope" android:required="false" />
+
+    <!-- Android 11+ package visibility: without these the SOS hand-off to
+         WhatsApp / the dialer / the SMS app silently resolves to null. -->
+    <queries>
+        <package android:name="com.whatsapp" />
+        <package android:name="com.whatsapp.w4b" />
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+            <data android:scheme="tel" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="smsto" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
 
     <application
         android:name=".ResqgoApp"
@@ -33,9 +59,17 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.RESQGO"
-        tools:targetApi="31">
-        
+        tools:targetApi="34">
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/brand_terracotta" />
+
         <activity
             android:name=".ui.onboarding.SplashActivity"
             android:exported="true"
@@ -116,7 +150,7 @@
 
         <service
             android:name=".service.RideMonitoringService"
-            android:foregroundServiceType="location"
+            android:foregroundServiceType="location|dataSync"
             android:exported="false" />
 
         <receiver

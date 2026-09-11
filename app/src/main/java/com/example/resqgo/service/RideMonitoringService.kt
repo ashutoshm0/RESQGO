@@ -92,6 +92,10 @@ class RideMonitoringService : Service(), SensorEventListener {
         when (intent?.action) {
             ACTION_START -> startMonitoring()
             ACTION_STOP  -> stopMonitoring()
+            // START_STICKY hands us a null intent after the system restarts the
+            // process. We must call startForeground() again immediately or Android
+            // kills the app with RemoteServiceException.
+            null -> if (prefs.isRidingOnline) startMonitoring() else stopSelf()
         }
         return START_STICKY
     }
@@ -99,13 +103,24 @@ class RideMonitoringService : Service(), SensorEventListener {
     // ────────────────────────────────────────────────────────
     private fun startMonitoring() {
         val notification = buildRideNotification()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(RIDE_NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
-        } else {
-            startForeground(RIDE_NOTIFICATION_ID, notification)
+
+        // Android 14+ throws SecurityException if we claim the `location` foreground
+        // service type without holding a location runtime permission — that killed the
+        // app on first launch. Fall back to `dataSync` so sensor-only crash detection
+        // still runs, and never let this path take the process down.
+        if (!startForegroundSafely(notification)) {
+            Log.e("RideService", "Foreground service refused by system — stopping")
+            prefs.isRidingOnline = false
+            stopSelf()
+            return
         }
+
         rideStartTime = System.currentTimeMillis()
-        locationTracker.startTracking()   // ← GPS breadcrumb recording starts
+        if (hasLocationPermission()) {
+            locationTracker.startTracking()   // ← GPS breadcrumb recording starts
+        } else {
+            Log.w("RideService", "No location permission — GPS breadcrumbs disabled")
+        }
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -121,14 +136,51 @@ class RideMonitoringService : Service(), SensorEventListener {
         }
 
         try {
-            accelSensor?.let { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
+            // SENSOR_DELAY_GAME = 20 ms (50 Hz). A motorcycle impact impulse lasts
+            // 100-200 ms; at SENSOR_DELAY_NORMAL (200 ms) the peak falls between
+            // samples and the crash is never seen. Bench: 0/40 caught at 5 Hz,
+            // 40/40 at 50 Hz. See CrashDetectorBenchTest.
+            accelSensor?.let { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
                 ?: Log.w("RideService", "Accelerometer unavailable")
-            gyroSensor?.let { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
+            gyroSensor?.let { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) }
                 ?: Log.w("RideService", "Gyroscope unavailable")
         } catch (e: Exception) {
             Log.e("RideService", "Sensor registration failed", e)
         }
     }
+
+    /**
+     * Promotes the service to the foreground with a service type the app is
+     * actually allowed to use. Returns false if the platform rejected every option.
+     */
+    private fun startForegroundSafely(notification: Notification): Boolean {
+        val types = if (hasLocationPermission()) {
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION or ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+        } else {
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+        }
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(RIDE_NOTIFICATION_ID, notification, types)
+            } else {
+                startForeground(RIDE_NOTIFICATION_ID, notification)
+            }
+            true
+        } catch (e: Exception) {
+            Log.e("RideService", "startForeground($types) failed", e)
+            // Last resort: no explicit type at all.
+            try {
+                startForeground(RIDE_NOTIFICATION_ID, notification)
+                true
+            } catch (e2: Exception) {
+                Log.e("RideService", "startForeground fallback failed", e2)
+                false
+            }
+        }
+    }
+
+    private fun hasLocationPermission(): Boolean =
+        com.example.resqgo.util.PermissionHelper.hasLocation(this)
 
     private fun stopMonitoring() {
         sensorManager.unregisterListener(this)
@@ -237,7 +289,7 @@ class RideMonitoringService : Service(), SensorEventListener {
         val notification = NotificationCompat.Builder(this, CRASH_CHANNEL_ID)
             .setContentTitle("🚨 Possible Accident Detected!")
             .setContentText("Tap I'M OK to cancel. Auto-calling emergency contacts in $timerDuration seconds.")
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_notification)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(false)
@@ -287,7 +339,7 @@ class RideMonitoringService : Service(), SensorEventListener {
         return NotificationCompat.Builder(this, RIDE_CHANNEL_ID)
             .setContentTitle("🛡️ RESQGO Safety Active")
             .setContentText("Monitoring two-wheeler in background while you ride")
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(rideIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)

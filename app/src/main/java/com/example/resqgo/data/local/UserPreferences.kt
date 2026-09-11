@@ -7,6 +7,15 @@ import org.json.JSONObject
 
 data class EmergencyContact(val name: String, val phone: String, val relation: String)
 
+enum class ThemeMode {
+    LIGHT, DARK, SYSTEM;
+    companion object {
+        fun fromString(value: String): ThemeMode {
+            return try { valueOf(value) } catch (_: Exception) { SYSTEM }
+        }
+    }
+}
+
 class UserPreferences(context: Context) {
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -19,7 +28,20 @@ class UserPreferences(context: Context) {
         private const val KEY_SENSITIVITY               = "sensitivity"
         private const val KEY_EMERGENCY_CONTACTS        = "emergency_contacts"
         private const val KEY_FAST2SMS_API_KEY          = "fast2sms_api_key"
+private const val KEY_DARK_MODE_ENABLED         = "dark_mode_enabled"
+        private const val KEY_THEME_MODE                = "theme_mode"
         private const val KEY_SOS_TIMER_SECONDS         = "sos_timer_seconds"
+        private const val KEY_SMS_PROMPT_SHOWN          = "sms_prompt_shown"
+        private const val KEY_SENSORS_AVAILABLE         = "sensors_available"
+        private const val KEY_GPS_READY                 = "gps_ready"
+        private const val KEY_TRAVEL_MODE               = "travel_mode"
+        private const val KEY_AVOID_TOLLS               = "avoid_tolls"
+        private const val KEY_AVOID_HIGHWAYS            = "avoid_highways"
+        private const val KEY_AVOID_FERRIES             = "avoid_ferries"
+        private const val KEY_FUEL_EFFICIENT            = "fuel_efficient"
+        private const val KEY_SAVED_ROUTES              = "saved_routes"
+        /** Saved-route records share one preference string, separated by this. */
+        private const val ROUTE_SEPARATOR               = "\n"
     }
 
     var hasCompletedOnboarding: Boolean
@@ -38,8 +60,12 @@ class UserPreferences(context: Context) {
         get() = prefs.getString(KEY_SENSITIVITY, "MEDIUM") ?: "MEDIUM"
         set(value) = prefs.edit().putString(KEY_SENSITIVITY, value).apply()
 
-    /** Fast2SMS API key for internet-based SMS (no Android SMS permission needed) */
-    private val bundledFast2smsKey = "XJ54PcSDhWRepOgZT329tLa7ru80ofmvUHVlCYjEinQkdKI6FbNVnjQywCiHO1apS5cAl0gGBRETPKWq"
+    /**
+     * Fast2SMS API key for internet-based SMS (needs no Android SMS permission).
+     * Supplied by FAST2SMS_API_KEY in local.properties — never hardcoded here,
+     * because anything in source ends up in git history.
+     */
+    private val bundledFast2smsKey = com.example.resqgo.BuildConfig.FAST2SMS_API_KEY
     var fast2smsApiKey: String
         get() {
             // If stored value is blank (e.g. installed over old app), use the bundled key
@@ -48,9 +74,71 @@ class UserPreferences(context: Context) {
         }
         set(value) = prefs.edit().putString(KEY_FAST2SMS_API_KEY, value).apply()
         
+    /** Results of the startup readiness checks, surfaced in the sensor panel. */
+    var sensorsAvailable: Boolean
+        get() = prefs.getBoolean(KEY_SENSORS_AVAILABLE, true)
+        set(value) = prefs.edit().putBoolean(KEY_SENSORS_AVAILABLE, value).apply()
+
+    var gpsReady: Boolean
+        get() = prefs.getBoolean(KEY_GPS_READY, false)
+        set(value) = prefs.edit().putBoolean(KEY_GPS_READY, value).apply()
+
+    /** True once we have asked for SMS permission, so we only ask once. */
+    var smsPromptShown: Boolean
+        get() = prefs.getBoolean(KEY_SMS_PROMPT_SHOWN, false)
+        set(value) = prefs.edit().putBoolean(KEY_SMS_PROMPT_SHOWN, value).apply()
+
     var sosTimerSeconds: Int
-        get() = prefs.getInt(KEY_SOS_TIMER_SECONDS, 20) // Default 20 seconds
+        get() = prefs.getInt(KEY_SOS_TIMER_SECONDS, 30) // Default 30 seconds
         set(value) = prefs.edit().putInt(KEY_SOS_TIMER_SECONDS, value).apply()
+    var isDarkModeEnabled: Boolean
+        get() = prefs.getBoolean(KEY_DARK_MODE_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_DARK_MODE_ENABLED, value).apply()
+
+    var themeMode: ThemeMode
+        get() = ThemeMode.fromString(prefs.getString(KEY_THEME_MODE, ThemeMode.SYSTEM.name) ?: ThemeMode.SYSTEM.name)
+        set(value) = prefs.edit().putString(KEY_THEME_MODE, value.name).apply()
+
+    // ── Trip / route preferences (Change 10) ────────────────────────────────
+
+    var routePreferences: com.example.resqgo.navigation.RoutePreferences
+        get() = com.example.resqgo.navigation.RoutePreferences(
+            travelMode = try {
+                com.example.resqgo.navigation.TravelMode.valueOf(
+                    prefs.getString(KEY_TRAVEL_MODE, null)
+                        ?: com.example.resqgo.navigation.TravelMode.TWO_WHEELER.name
+                )
+            } catch (_: Exception) {
+                com.example.resqgo.navigation.TravelMode.TWO_WHEELER
+            },
+            avoidTolls = prefs.getBoolean(KEY_AVOID_TOLLS, false),
+            avoidHighways = prefs.getBoolean(KEY_AVOID_HIGHWAYS, false),
+            avoidFerries = prefs.getBoolean(KEY_AVOID_FERRIES, false),
+            fuelEfficient = prefs.getBoolean(KEY_FUEL_EFFICIENT, false)
+        )
+        set(value) = prefs.edit()
+            .putString(KEY_TRAVEL_MODE, value.travelMode.name)
+            .putBoolean(KEY_AVOID_TOLLS, value.avoidTolls)
+            .putBoolean(KEY_AVOID_HIGHWAYS, value.avoidHighways)
+            .putBoolean(KEY_AVOID_FERRIES, value.avoidFerries)
+            .putBoolean(KEY_FUEL_EFFICIENT, value.fuelEfficient)
+            .apply()
+
+    /** Saved routes, newest first, stored as "label|lat|lng". */
+    fun getSavedRoutes(): List<String> =
+        prefs.getString(KEY_SAVED_ROUTES, "")
+            ?.split(ROUTE_SEPARATOR)
+            ?.filter { it.isNotBlank() }
+            ?: emptyList()
+
+    fun saveRoute(entry: String) {
+        val existing = getSavedRoutes().toMutableList()
+        existing.remove(entry)
+        existing.add(0, entry)
+        prefs.edit()
+            .putString(KEY_SAVED_ROUTES, existing.take(20).joinToString(ROUTE_SEPARATOR))
+            .apply()
+    }
 
     fun getEmergencyContacts(): List<EmergencyContact> {
         val contactsJson = prefs.getString(KEY_EMERGENCY_CONTACTS, "[]")
